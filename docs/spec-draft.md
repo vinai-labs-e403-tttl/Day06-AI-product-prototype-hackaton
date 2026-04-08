@@ -1,6 +1,6 @@
 # SPEC — AI Product Hackathon
 
-**Nhóm:** Team VinRoute
+**Nhóm:** Team 31, E403, Đăng Thanh Tùng (dang1412), Trần Kiên Trường (tktrev), Trịnh Ngọc Tú (cheeka13), Đặng Quang Minh (minh267), Trần Tiến Long (longtranvie)
 **Track:** ☑ XanhSM · ☐ VinFast · ☐ Vinmec · ☐ VinUni-VinSchool · ☐ Open
 **Problem statement (1 câu):** Người dùng VinBus mất thời gian tìm tuyến bus tối ưu trên ứng dụng vì giao diện bản đồ phức tạp — AI chatbot trả lời bằng ngôn ngữ tự nhiên, gợi ý tuyến bus phù hợp trong vài giây.
 
