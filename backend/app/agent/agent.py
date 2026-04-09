@@ -9,6 +9,8 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
 import os
 import sys
+from datetime import datetime
+import pytz # Cần thiết để đảm bảo đúng múi giờ Việt Nam
 
 # Đảm bảo thư mục app/tools có thể được import
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -61,9 +63,15 @@ def chat(query: str, location: str = None, session_id: str = "default-session") 
         graph.invoke({"messages": [SystemMessage(content=SYSTEM_PROMPT)]}, config)
 
     # 2. Chuẩn bị tin nhắn User
+    now = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
+    current_time_str = now.strftime("%H:%M, %A ngày %d/%m/%Y")
+    
     input_text = query
+    context_prefix = f"[Hệ thống: Thời gian hiện tại là {current_time_str}]"
     if location:
-        input_text = f"{query}\n[Hệ thống: Vị trí của tôi hiện tại là {location}]"
+        context_prefix += f"\n[Hệ thống: Vị trí của tôi hiện tại là {location}]"
+    
+    input_text = f"{context_prefix}\n\n{query}"
 
     # 3. Gửi câu hỏi
     logger.info(f"🤖 Agent đang xử lý câu hỏi: {query[:50]}...")
@@ -86,9 +94,15 @@ def chat_stream(query: str, location: str = None, session_id: str = "default-ses
         graph.invoke({"messages": [SystemMessage(content=SYSTEM_PROMPT)]}, config)
 
     # 2. Chuẩn bị tin nhắn User
+    now = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
+    current_time_str = now.strftime("%H:%M, %A ngày %d/%m/%Y")
+    
     input_text = query
+    context_prefix = f"[Hệ thống: Thời gian hiện tại là {current_time_str}]"
     if location:
-        input_text = f"{query}\n[Hệ thống: Vị trí của tôi hiện tại là {location}]"
+        context_prefix += f"\n[Hệ thống: Vị trí của tôi hiện tại là {location}]"
+    
+    input_text = f"{context_prefix}\n\n{query}"
 
     # 3. Stream từng bước (node) của graph
     yield json.dumps({"status": "FlowBot đang phân tích yêu cầu..."}) + "\n"
