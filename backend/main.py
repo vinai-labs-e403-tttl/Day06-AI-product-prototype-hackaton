@@ -32,7 +32,7 @@ class ChatResponse(BaseModel):
     confidence: float | None = None
 
 
-@app.get("/health")
+@app.get("/")
 async def health():
     return {"status": "ok"}
 
