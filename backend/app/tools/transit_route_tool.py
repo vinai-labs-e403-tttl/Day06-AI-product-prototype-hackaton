@@ -2,6 +2,11 @@ import os
 import requests
 from dotenv import load_dotenv
 from langchain_core.tools import tool
+try:
+    from logger import logger
+except ImportError:
+    import logging
+    logger = logging.getLogger(__name__)
 
 load_dotenv(override=True)
 
@@ -50,6 +55,7 @@ class TransitRouteTool:
         Returns:
             dict với keys: success, routes, message
         """
+        logger.info(f"🌐 Đang gọi Google Maps Transit API: {origin} -> {destination}")
         headers = {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": self.api_key,
@@ -74,11 +80,14 @@ class TransitRouteTool:
             data = response.json()
 
             if "routes" not in data or not data["routes"]:
+                logger.warning(f"⚠️ Google Maps không tìm thấy tuyến: {origin} -> {destination}")
                 return {
                     "success": False,
                     "routes": [],
                     "message": "Không tìm được tuyến công cộng cho lộ trình này.",
                 }
+            
+            logger.info(f"✅ Google Maps tìm thấy {len(data['routes'])} tuyến")
 
             routes = []
             for route in data["routes"]:
@@ -146,6 +155,7 @@ class TransitRouteTool:
                 "message": "Timeout khi gọi Google Maps Routes API.",
             }
         except Exception as e:
+            logger.error(f"❌ Lỗi khi tìm tuyến Google Maps: {str(e)}", exc_info=True)
             return {
                 "success": False,
                 "routes": [],

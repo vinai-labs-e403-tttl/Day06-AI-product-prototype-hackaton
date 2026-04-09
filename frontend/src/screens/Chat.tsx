@@ -26,26 +26,41 @@ export default function Chat({ onSelectRoute }: ChatProps) {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [thinkingStep, setThinkingStep] = useState<string>("");
+  const [location, setLocation] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleClearConversation = async () => {
-    try {
-      await fetch(`http://localhost:8000/chat/clear?conversation_id=${conversationId}`, {
-        method: "POST",
-      });
-    } catch (_) {}
-    setMessages([
-      {
-        id: Date.now().toString(),
-        text: 'Hội thoại đã được xóa. Bạn muốn đi đâu hôm nay?',
-        sender: 'bot',
-        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Trình duyệt không hỗ trợ GPS.");
+      return;
+    }
+    
+    setIsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = `${position.coords.latitude}, ${position.coords.longitude}`;
+        setLocation(coords);
+        setIsLoading(false);
+        // Thong bao cho user
+        const sysMsg: ChatMessage = {
+          id: Date.now().toString(),
+          text: `📍 GPS đã được kích hoạt: ${coords}`,
+          sender: 'bot',
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages(prev => [...prev, sysMsg]);
+      },
+      (error) => {
+        console.error(error);
+        setIsLoading(false);
+        alert("Không thể lấy vị trí. Vui lòng kiểm tra quyền truy cập.");
       }
-    ]);
+    );
   };
 
   const handleSend = async () => {
@@ -66,26 +81,60 @@ export default function Chat({ onSelectRoute }: ChatProps) {
       const response = await fetch("http://localhost:8000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: input, conversation_id: conversationId }),
+        body: JSON.stringify({ 
+          query: input,
+          location: location 
+        }),
       });
 
-      const data = await response.json();
+      if (!response.body) throw new Error("ReadableStream not supported");
+      
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+      let buffer = "";
+      let finalData: any = null;
 
-      const botMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        text: data.reply || "Xin lỗi, tôi chưa hiểu ý bạn. Bạn có thể diễn đạt lại được không?",
-        sender: 'bot',
-        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        routes: data.suggested_routes?.map((r: any, i: number) => ({
-          id: r.bus_number || `route-${i}`,
-          name: `BUS ${r.bus_number || '?'}`,
-          eta: r.duration || 'N/A',
-          gate: `${r.departure_stop} → ${r.arrival_stop}`,
-          isLive: false,
-        })),
-      };
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+        
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || ""; // Lưu phần dư vào buffer
 
-      setMessages(prev => [...prev, botMessage]);
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine) continue;
+          try {
+            const parsed = JSON.parse(trimmedLine);
+            if (parsed.status) {
+              setThinkingStep(parsed.status);
+            } else if (parsed.reply) {
+              finalData = parsed;
+            }
+          } catch (e) {
+            console.error("Error parsing stream chunk", e);
+          }
+        }
+      }
+
+      if (finalData) {
+        const botMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          text: finalData.reply || "Xin lỗi, tôi chưa hiểu ý bạn. Bạn có thể diễn đạt lại được không?",
+          sender: 'bot',
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          routes: finalData.suggested_routes?.map((r: any, i: number) => ({
+            id: r.bus_number || `route-${i}`,
+            name: `BUS ${r.bus_number || '?'}`,
+            eta: r.duration || 'N/A',
+            gate: `${r.departure_stop} → ${r.arrival_stop}`,
+            isLive: false,
+          })),
+        };
+        setMessages(prev => [...prev, botMessage]);
+      }
     } catch (error) {
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -96,6 +145,7 @@ export default function Chat({ onSelectRoute }: ChatProps) {
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+      setThinkingStep("");
     }
   };
 
@@ -208,7 +258,7 @@ export default function Chat({ onSelectRoute }: ChatProps) {
             </div>
             <div className="flex items-center gap-2 text-outline">
               <Loader2 size={16} className="animate-spin" />
-              <span className="text-sm">FlowBot đang trả lời...</span>
+              <span className="text-sm">{thinkingStep || "FlowBot đang xử lý..."}</span>
             </div>
           </motion.div>
         )}
@@ -218,19 +268,19 @@ export default function Chat({ onSelectRoute }: ChatProps) {
       {/* Floating Input Bar */}
       <div className="fixed bottom-24 left-0 w-full px-4 flex justify-center z-40 pointer-events-none">
         <div className="w-full max-w-2xl bg-white/80 backdrop-blur-2xl rounded-2xl p-2 shadow-2xl border border-primary/10 flex items-center gap-2 pointer-events-auto">
-          <button
-            onClick={handleClearConversation}
-            title="Xóa hội thoại"
-            className="w-12 h-12 flex items-center justify-center text-outline hover:text-error transition-colors"
+          <button 
+            onClick={handleGetLocation}
+            className={cn(
+                "w-12 h-12 flex items-center justify-center transition-colors rounded-xl",
+                location ? "bg-primary/10 text-primary" : "text-outline hover:text-primary"
+            )}
+            title="Lấy vị trí GPS"
           >
-            <Trash2 size={20} />
-          </button>
-          <button className="w-10 h-10 flex items-center justify-center text-outline hover:text-primary transition-colors">
-            <Mic size={20} />
+            <LocateFixed size={24} />
           </button>
           <input
             className="flex-1 bg-transparent border-none focus:ring-0 text-on-surface-variant font-sans text-base placeholder:text-outline/60 outline-hidden"
-            placeholder="Where would you like to go?"
+            placeholder="Bạn muốn đi đâu?"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}

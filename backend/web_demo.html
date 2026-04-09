@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BusMate - Trợ Lý VinBus Thông Minh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #008D4E;
+            --primary-light: #4CAF50;
+            --secondary: #FFD700;
+            --bg-dark: #0F172A;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar - Preset Actions */
+        .sidebar {
+            width: 320px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 20;
+        }
+
+        .logo {
+            display: flex;
+            items-center: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary-light);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .preset-section h3 {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .preset-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-main);
+            text-align: left;
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .preset-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        /* Main Chat Area */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 1.5rem 2rem;
+            background: var(--glass);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-btn {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            background: var(--glass);
+            color: var(--text-main);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-badge {
+            padding: 6px 14px;
+            background: rgba(0, 141, 78, 0.2);
+            border: 1px solid var(--primary);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .empty-state {
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 1rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            max-width: 740px;
+        }
+
+        .empty-actions {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        /* Message Bubbles */
+        .message {
+            max-width: 80%;
+            padding: 1.2rem;
+            border-radius: 18px;
+            line-height: 1.6;
+            animation: fadeIn 0.4s ease-out;
+            position: relative;
+        }
+
+        .typing-status {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bot-msg {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .user-msg {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0, 141, 78, 0.3);
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .input-container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--glass);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 12px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .icon-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-gps {
+            background: var(--glass);
+            color: var(--text-muted);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-gps.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-send {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 8px 22px rgba(0, 141, 78, 0.35);
+        }
+
+        .btn-send:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Markdown-like formatting helper */
+        .message strong {
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        .message br {
+            margin-bottom: 8px;
+        }
+
+        .routes-group {
+            display: grid;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .route-card {
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 0.75rem 0.9rem;
+        }
+
+        .route-line {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .route-meta {
+            font-size: 0.86rem;
+            color: var(--text-muted);
+        }
+
+        .route-details {
+            margin-top: 10px;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            opacity: 0.95;
+        }
+
+        .quick-chips {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .chip {
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-main);
+            border-radius: 999px;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chip:hover {
+            background: rgba(0, 141, 78, 0.2);
+            border-color: var(--primary-light);
+        }
+
+        /* Loader */
+        .typing {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 280px;
+                padding: 1.25rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                overflow: hidden;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+                z-index: 30;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.open {
+                display: block;
+            }
+
+            .menu-btn {
+                display: inline-flex;
+            }
+
+            .chat-header {
+                padding: 1rem;
+                gap: 10px;
+            }
+
+            .status-badge {
+                font-size: 0.72rem;
+                padding: 5px 10px;
+            }
+
+            .chat-messages {
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .message {
+                max-width: 92%;
+                padding: 0.9rem;
+                font-size: 0.95rem;
+            }
+
+            .input-area {
+                padding: 1rem;
+            }
+
+            .input-container {
+                border-radius: 14px;
+                padding: 6px;
+                gap: 6px;
+            }
+
+            .icon-btn {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+            }
+
+            input {
+                padding: 10px;
+                font-size: 0.95rem;
+            }
+
+            .quick-chips {
+                gap: 6px;
+                margin-top: 8px;
+            }
+
+            .chip {
+                font-size: 0.78rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i data-lucide="bus"></i>
+            <span id="botNameLogo">BUSMATE</span>
+        </div>
+
+        <div class="preset-section">
+            <h3>Dành cho bạn</h3>
+            <button class="preset-btn" onclick="quickAsk('Cho mình hỏi các tuyến VinBus đi sang Grand World và Ocean City nhé!')">
+                <i data-lucide="palmtree"></i> Sang Grand World
+            </button>
+            <button class="preset-btn" onclick="quickAsk('Làm sao để đi từ Royal City sang Ocean Park bằng VinBus?')">
+                <i data-lucide="navigation"></i> Đi Royal City - OP
+            </button>
+            <button class="preset-btn" onclick="quickAsk('Tuyến VinBus OCT1 hôm nay chạy từ mấy giờ đến mấy giờ?')">
+                <i data-lucide="clock"></i> Lịch chạy OCT1
+            </button>
+        </div>
+
+        <div class="preset-section" style="margin-top: auto;">
+            <div
+                style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 12px; font-size: 0.85rem; color: var(--text-muted);">
+                <i data-lucide="info" style="width:16px; margin-bottom: 5px;"></i><br>
+                <span id="botNameInfo">BusMate</span> sử dụng Hybrid AI để kết hợp dữ liệu Google Maps và VinBus Local Routes.
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="chat-header">
+            <div class="header-left">
+                <button class="menu-btn" onclick="toggleSidebar()" title="Mở menu">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div>
+                    <h1 style="font-size: 1.1rem; font-weight: 600;">Hỗ trợ tìm đường VinBus</h1>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);"><span id="botNameHeader">BusMate</span> - AI Bus Assistant v2.0</p>
+                </div>
+            </div>
+            <div class="status-badge">
+                <div style="width: 8px; height: 8px; background: #4CAF50; border-radius: 50%;"></div>
+                HỆ THỐNG TRỰC TUYẾN
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatArea">
+            <div class="message bot-msg">
+                Xin chào! Tôi là <strong id="botNameWelcome">BusMate</strong>. 🚌<br>
+                Tôi có thể giúp bạn tìm các tuyến <strong>VinBus miễn phí</strong> (OCT/OCP) hoặc các tuyến bus công
+                cộng (E01-E09).<br><br>
+                Bạn muốn đi đâu hôm nay? Đừng quên bật <strong>GPS</strong> để tôi chỉ đường chính xác nhất từ vị trí
+                của bạn nhé!
+            </div>
+            <div class="empty-state" id="emptyState">
+                Bắt đầu nhanh với một trong các tác vụ bên dưới:
+                <div class="empty-actions">
+                    <button class="chip" onclick="quickAsk('Đi từ Royal City đến Times City bằng bus')">Tìm tuyến Royal -> Times</button>
+                    <button class="chip" onclick="quickAsk('Tuyến OCT1 hôm nay chạy đến mấy giờ?')">Xem lịch OCT1</button>
+                    <button class="chip" onclick="toggleGPS()">Bật GPS của tôi</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div style="width: 100%; max-width: 800px;">
+                <div class="input-container">
+                    <button class="icon-btn btn-gps" id="gpsBtn" onclick="toggleGPS()" title="Bật/Tắt định vị GPS">
+                        <i data-lucide="map-pin"></i>
+                    </button>
+                    <input type="text" id="userInput"
+                        placeholder="Nhập câu hỏi của bạn tại đây... (VD: Đi từ Royal City sang Grand World)"
+                        onkeypress="handleKey(event)">
+                    <button class="icon-btn btn-send" id="sendBtn" onclick="sendMessage()" title="Gửi câu hỏi">
+                        <i data-lucide="send"></i>
+                    </button>
+                </div>
+                <div class="quick-chips">
+                    <button class="chip" onclick="quickAsk('Đi từ Royal City đến Times City bằng bus')">Royal -> Times</button>
+                    <button class="chip" onclick="quickAsk('Đi từ Royal City đến Ocean Park bằng bus')">Royal -> Ocean Park</button>
+                    <button class="chip" onclick="quickAsk('Thông tin tuyến OCT1')">Thông tin OCT1</button>
+                    <button class="chip" onclick="quickAsk('Tuyến bus nào gần vị trí của tôi nhất?')">Tuyến gần tôi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        const BOT_NAME = "BusMate";
+        let currentCoords = null;
+        const backendUrl = "http://localhost:8000/chat";
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        let loadingFallbackTimer = null;
+
+        // Bind bot name once for all UI labels
+        document.title = `${BOT_NAME} - Trợ Lý VinBus Thông Minh`;
+        document.getElementById('botNameLogo').textContent = BOT_NAME.toUpperCase();
+        document.getElementById('botNameInfo').textContent = BOT_NAME;
+        document.getElementById('botNameHeader').textContent = BOT_NAME;
+        document.getElementById('botNameWelcome').textContent = BOT_NAME;
+
+        function appendMessage(sender, text) {
+            const chatArea = document.getElementById('chatArea');
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState && sender === 'user') emptyState.style.display = 'none';
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender === 'user' ? 'user-msg' : 'bot-msg'}`;
+
+            // Nếu nhận được nội dung dạng danh sách tuyến, render theo card để dễ đọc.
+            msgDiv.innerHTML = renderBotContent(text, sender);
+
+            chatArea.appendChild(msgDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function renderBotContent(text, sender) {
+            if (sender === 'user') {
+                return text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            }
+
+            const lines = text.split('\n').map((line) => line.trim()).filter(Boolean);
+            const routeLines = lines.filter((line) => line.startsWith('🚌 Tuyến'));
+            if (!routeLines.length) {
+                return text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            }
+
+            const cards = routeLines.map((line) => {
+                const cleaned = line.replace(/^🚌\s*/, '');
+                return `<div class="route-card"><div class="route-line">${cleaned}</div><div class="route-meta">Phương án bus phù hợp theo yêu cầu của bạn.</div></div>`;
+            }).join('');
+            const fullFormatted = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            return `<div class="routes-group">${cards}</div><div class="route-details">${fullFormatted}</div>`;
+        }
+
+        function showTyping() {
+            const chatArea = document.getElementById('chatArea');
+            const loader = document.createElement('div');
+            loader.className = 'message bot-msg typing-indicator';
+            loader.id = 'typingIndicator';
+            loader.innerHTML = '<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+            chatArea.appendChild(loader);
+            chatArea.scrollTop = chatArea.scrollHeight;
+
+            if (loadingFallbackTimer) clearTimeout(loadingFallbackTimer);
+            loadingFallbackTimer = setTimeout(() => {
+                updateTypingStatus('Mình đang đối chiếu nhiều phương án, bạn chờ chút nhé...');
+            }, 3000);
+        }
+
+        function hideTyping() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+            if (loadingFallbackTimer) {
+                clearTimeout(loadingFallbackTimer);
+                loadingFallbackTimer = null;
+            }
+        }
+
+        async function handleStreamingResponse(response) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            let buffer = "";
+            let finalData = null;
+
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+                
+                const lines = buffer.split("\n");
+                buffer = lines.pop() || "";
+
+                for (const line of lines) {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine) continue;
+                    try {
+                        const parsed = JSON.parse(trimmedLine);
+                        if (parsed.status) {
+                            // Không lộ trạng thái kỹ thuật nội bộ; chỉ hiển thị mức vừa phải.
+                            updateTypingStatus(mapBackendStatus(parsed.status));
+                        } else if (parsed.reply) {
+                            finalData = parsed;
+                        }
+                    } catch (e) {
+                        console.error("Error parsing stream chunk", e);
+                    }
+                }
+            }
+            return finalData;
+        }
+
+        function mapBackendStatus(raw) {
+            const status = (raw || '').toLowerCase();
+            if (status.includes('chuẩn bị')) return 'Đã có kết quả';
+            if (status.includes('tổng hợp') || status.includes('tra cứu')) return 'Đang tìm tuyến phù hợp...';
+            return 'Đang xử lý yêu cầu...';
+        }
+
+        function updateTypingStatus(status) {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.innerHTML = `<div class="typing-status">
+                    <div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                    <span>${status}</span>
+                </div>`;
+            }
+        }
+
+        async function autoSendLocation(coords) {
+            appendMessage('bot', `📍 <strong>Đã lấy được GPS!</strong><br><small>Tọa độ: ${coords}</small><br>Đang đồng bộ với ${BOT_NAME}...`);
+            showTyping();
+            try {
+                const response = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: "/loc " + coords,
+                        location: coords
+                    })
+                });
+
+                if (!response.ok) throw new Error("Server trả về lỗi " + response.status);
+
+                const data = await handleStreamingResponse(response);
+                hideTyping();
+                if (data) appendMessage('bot', data.reply);
+            } catch (error) {
+                hideTyping();
+                appendMessage('bot', '<strong>⚠️ Lỗi hệ thống:</strong> Không thể gửi vị trí lên Server. ' + error.message);
+                console.error("Lỗi gửi vị trí:", error);
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const displayMessage = currentCoords ? `📍 ${text}` : text;
+            appendMessage('user', displayMessage);
+            input.value = '';
+
+            showTyping();
+            updateTypingStatus('Đang xử lý yêu cầu...');
+
+            try {
+                const response = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: text,
+                        location: currentCoords
+                    })
+                });
+
+                if (!response.ok) throw new Error("Server error " + response.status);
+
+                const data = await handleStreamingResponse(response);
+                hideTyping();
+                if (data) appendMessage('bot', data.reply);
+            } catch (error) {
+                hideTyping();
+                appendMessage('bot', '<strong>⚠️ Lỗi:</strong> Không thể kết nối tới Backend. Hãy chắc chắn Server đang chạy.');
+                console.error(error);
+            }
+        }
+
+        function handleKey(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        function toggleGPS() {
+            const btn = document.getElementById('gpsBtn');
+            if (currentCoords) {
+                currentCoords = null;
+                btn.classList.remove('active');
+                appendMessage('bot', '📍 Đã <strong>tắt</strong> định vị GPS.');
+            } else {
+                if (navigator.geolocation) {
+                    btn.classList.add('active');
+                    appendMessage('bot', '🛰️ <strong>Đang kết nối vệ tinh...</strong><br><small>Vui lòng cho phép truy cập vị trí trên trình duyệt.</small>');
+
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            currentCoords = `${pos.coords.latitude}, ${pos.coords.longitude}`;
+                            autoSendLocation(currentCoords);
+                        },
+                        (err) => {
+                            btn.classList.remove('active');
+                            let errorMsg = "Không thể lấy vị trí.";
+                            if (err.code === 1) errorMsg = "Bạn đã từ chối cấp quyền GPS.";
+                            else if (err.code === 3) errorMsg = "Hết thời gian chờ (Timeout) lấy vị trí.";
+
+                            appendMessage('bot', `🚫 <strong>Lỗi GPS:</strong> ${errorMsg}<br><small>Chi tiết: ${err.message}</small>`);
+                        },
+                        { enableHighAccuracy: false, timeout: 8000, maximumAge: 0 }
+                    );
+                } else {
+                    alert("Trình duyệt không hỗ trợ GPS.");
+                }
+            }
+        }
+
+        function quickAsk(text) {
+            document.getElementById('userInput').value = text;
+            sendMessage();
+        }
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('open');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('open');
+        }
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) closeSidebar();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,130 @@
+{
+  "routes": [
+    {
+      "id": "OCT1",
+      "name": "OCT1",
+      "full_name": "KĐT Royal City - Ocean City",
+      "type": "OCT",
+      "operator": "Công Ty TNHH Dịch Vụ Vận Tải Sinh Thái VinBus",
+      "route_length_km": 31,
+      "operating_hours": "06:00-23:59",
+      "travel_time_minutes": "75-80",
+      "total_trips": 192,
+      "frequency_minutes": "15-20",
+      "is_free": true,
+      "description": "Tuyến kết nối KĐT Royal City với Ocean City. Đi qua các điểm lớn như Times City, Ocean Park 2 và 3.",
+      "stops_outbound": [
+        {"order": 1, "name": "Royal City R1", "coords": {"lat": 21.0028, "lng": 105.8152}},
+        {"order": 5, "name": "Times City (478 Minh Khai)", "coords": {"lat": 20.9951, "lng": 105.8679}},
+        {"order": 8, "name": "Tòa nhà S2.09", "coords": {"lat": 20.9920, "lng": 105.9380}},
+        {"order": 10, "name": "Trường Vinschool Ocean Park 2", "coords": {"lat": 20.9750, "lng": 105.9720}},
+        {"order": 22, "name": "Công viên Vinwonder Water Park", "coords": {"lat": 20.9620, "lng": 105.9850}}
+      ],
+      "stops_return": [
+        {"order": 1, "name": "Công viên Vin Wonders - Water Park", "coords": {"lat": 20.9620, "lng": 105.9850}},
+        {"order": 5, "name": "Đối diện Vinhomes Times City", "coords": {"lat": 20.9951, "lng": 105.8679}},
+        {"order": 8, "name": "Royal City R1", "coords": {"lat": 21.0028, "lng": 105.8152}}
+      ],
+      "stops": [
+        {"order": 1, "name": "Royal City", "keywords": ["royal city", "nguyen trai", "nguyễn trãi", "royal", "vũ môn", "vu mon"]},
+        {"order": 2, "name": "Bảo Tàng PKKQ", "keywords": ["bảo tàng pkkq", "bao tang pkkq", "trường chinh", "truong chinh"]},
+        {"order": 3, "name": "Times City", "keywords": ["times city", "times", "minh khai", "vinmec times city"]},
+        {"order": 4, "name": "Ocean Park 2", "keywords": ["ocean park 2", "op2", "vinschool op2", "vincom op2", "kinh đô ánh sáng"]},
+        {"order": 5, "name": "Ocean Park 3", "keywords": ["ocean park 3", "op3", "water park", "wave park", "grand world", "venice", "phố biển", "thời đại"]}
+      ],
+      "origin_keywords": ["royal city", "nguyen trai", "nguyễn trãi", "royal", "vũ môn", "thượng đình", "bảo tàng pkkq", "times city", "minh khai", "vin university", "vin uni", "vinuni"],
+      "destination_keywords": ["ocean park", "ocean city", "grand world", "mega grand world", "công viên sóng", "op3", "op2", "ocean park 2", "ocean park 3", "vinwonder", "thời đại", "phố biển", "vin university", "vin uni", "vinuni"]
+    },
+    {
+      "id": "OCT2",
+      "name": "OCT2",
+      "full_name": "Bờ Hồ - Ocean City",
+      "type": "OCT",
+      "operator": "Công Ty TNHH Dịch Vụ Vận Tải Sinh Thái VinBus",
+      "route_length_km": 28,
+      "operating_hours": "06:05-23:59",
+      "travel_time_minutes": "65-75",
+      "total_trips": 192,
+      "frequency_minutes": "15-20",
+      "is_free": true,
+      "description": "Tuyến kết nối Bờ Hồ (Nhà hát Lớn) đến Ocean City. Rất tiện cho khách du lịch phố cổ, Hoàn Kiếm muốn sang trải nghiệm biển nhân tạo, VinWonders, Grand World.",
+      "stops_outbound": [
+        {"order": 1, "name": "Nhà hát Lớn", "coords": {"lat": 21.0245, "lng": 105.8580}},
+        {"order": 3, "name": "TTTM Vincom Bà Triệu", "coords": {"lat": 21.0125, "lng": 105.8494}},
+        {"order": 5, "name": "Tòa nhà S2.09", "coords": {"lat": 20.9920, "lng": 105.9380}},
+        {"order": 18, "name": "Phân khu Thời Đại", "coords": {"lat": 20.9600, "lng": 105.9900}}
+      ],
+      "stops_return": [
+        {"order": 1, "name": "Công viên Vin Wonders - Water Park", "coords": {"lat": 20.9620, "lng": 105.9850}},
+        {"order": 7, "name": "Bờ Hồ", "coords": {"lat": 21.0285, "lng": 105.8524}}
+      ],
+      "stops": [
+        {"order": 1,  "name": "Nhà hát Lớn", "keywords": ["nhà hát lớn", "nha hat lon", "bờ hồ", "bo ho", "opera house", "hoan kiem", "hoàn kiếm"]},
+        {"order": 2,  "name": "Ngân hàng Nhà nước - Vườn hoa con Cóc", "keywords": ["vườn hoa con cóc", "vuon hoa con coc", "ngan hang nha nuoc"]},
+        {"order": 3,  "name": "TTTM Vincom Bà Triệu", "keywords": ["vincom bà triệu", "vincom ba trieu", "bà triệu", "ba trieu"]},
+        {"order": 4,  "name": "Ô Đống Mác (Trần Khát Chân)", "keywords": ["ô đống mác", "o dong mac", "trần khát chân", "tran khat chan"]},
+        {"order": 5,  "name": "Tòa nhà S2.09 / S2.15", "keywords": ["s2.09", "s2.15", "toa nha s2"]},
+        {"order": 6,  "name": "Vinschool / Vincom Ocean Park 2", "keywords": ["vinschool ocean park 2", "vincom ocean park 2", "ocean park 2", "op2", "oceanpark2"]},
+        {"order": 7,  "name": "Kinh đô Ánh sáng / CenterPoint", "keywords": ["kinh đô ánh sáng", "kinh do anh sang", "centerpoint", "làng sake", "lang sake"]},
+        {"order": 8,  "name": "VinWonder Wave Park / K-Town", "keywords": ["vinwonder wave park", "wave park", "k-town", "san hô", "san ho"]},
+        {"order": 9,  "name": "The Venice / Phố Biển", "keywords": ["the venice", "venice", "phố biển", "pho bien", "phố biển 22", "phố biển 19"]},
+        {"order": 10, "name": "Công viên Vinwonder Water Park", "keywords": ["vinwonder water park", "water park", "công viên sóng", "cong vien song", "grand world", "mega grand world"]},
+        {"order": 11, "name": "Phân khu Thời Đại", "keywords": ["thời đại", "thoi dai", "đại lộ bốn mùa", "dai lo bon mua"]}
+      ],
+      "origin_keywords": ["nhà hát lớn", "nha hat lon", "bờ hồ", "bo ho", "hoan kiem", "hoàn kiếm", "phố cổ", "pho co", "opera", "vườn hoa con cóc", "bà triệu", "ba trieu", "vincom bà triệu", "vincom ba trieu", "trần khát chân", "tran khat chan", "ô đống mác", "o dong mac", "vin university", "vin uni", "vinuni"],
+      "destination_keywords": ["ocean park", "ocean city", "grand world", "mega grand world", "vinwonder", "water park", "wave park", "the venice", "phố biển", "op2", "op3", "ocean park 2", "ocean park 3", "centerpoint", "làng sake", "vin university", "vin uni", "vinuni"]
+    },
+    {
+      "id": "OCP1",
+      "name": "OCP1",
+      "full_name": "Nội liên khu Ocean Park 1, 2, 3",
+      "type": "OCP",
+      "operator": "Công Ty TNHH Dịch Vụ Vận Tải Sinh Thái VinBus",
+      "route_length_km": 27,
+      "operating_hours": "05:00-23:59",
+      "travel_time_minutes": "60",
+      "total_trips": 73,
+      "frequency_minutes": "30-45",
+      "is_free": true,
+      "description": "Tuyến nội liên khu kết nối trực tiếp Ocean Park 1, 2 và 3. Giúp cư dân di chuyển thuận tiện giữa các đại đô thị.",
+      "stops_outbound": [
+        {"order": 1, "name": "Bến trả Ocean Park 2, 3", "coords": {"lat": 20.9700, "lng": 105.9700}},
+        {"order": 2, "name": "Đại học VinUni", "coords": {"lat": 20.9950, "lng": 105.9400}},
+        {"order": 8, "name": "TTTM Vincom OceanPark", "coords": {"lat": 20.9900, "lng": 105.9450}},
+        {"order": 12, "name": "Tòa nhà S1.10", "coords": {"lat": 20.9940, "lng": 105.9390}}
+      ],
+      "stops": [
+        {"order": 1, "name": "Ocean Park 1", "keywords": ["ocean park 1", "op1", "vinuni", "vin uni", "vin university", "vincom ocean park", "hải âu", "sao biển", "biển hồ", "lý thánh tông", "s1.10", "hải đăng", "brighton college", "đại dương"]},
+        {"order": 2, "name": "Ocean Park 2", "keywords": ["ocean park 2", "op2", "s2.15", "vinschool op2", "vincom op2", "kinh đô ánh sáng", "ngọc trai", "san hô"]},
+        {"order": 3, "name": "Ocean Park 3", "keywords": ["ocean park 3", "op3", "wave park", "k-town", "the venice", "grand world", "phố biển", "water park", "thời đại"]}
+      ],
+      "origin_keywords": ["ocean park 1", "op1", "vinuni", "vin uni", "vin university", "hải âu", "sao biển", "biển hồ", "s1.10", "hải đăng", "đại dương", "vincom ocean park"],
+      "destination_keywords": ["ocean park 2", "ocean park 3", "op2", "op3", "grand world", "water park", "wave park", "venice", "thời đại", "phố biển", "kinh đô ánh sáng", "k-town"]
+    },
+    {
+      "id": "OCP2",
+      "name": "OCP2",
+      "full_name": "Nội khu Ocean Park 2, 3",
+      "type": "OCP",
+      "operator": "Công Ty TNHH Dịch Vụ Vận Tải Sinh Thái VinBus",
+      "route_length_km": 10,
+      "operating_hours": "06:00-23:59",
+      "travel_time_minutes": "35-40",
+      "total_trips": 69,
+      "frequency_minutes": "20-30",
+      "is_free": true,
+      "description": "Tuyến nội khu kết nối các phân khu tại Ocean Park 2 và Ocean Park 3. Giúp cư dân di chuyển nội khu thuận tiện.",
+      "stops_outbound": [
+        {"order": 1, "name": "Phân khu Thời Đại – Đường Thời Đại 6", "coords": {"lat": 20.9600, "lng": 105.9900}},
+        {"order": 2, "name": "Đối diện Cổng Grand World - The Venice", "coords": {"lat": 20.9650, "lng": 105.9950}},
+        {"order": 13, "name": "Công viên VinWonder Wave Park", "coords": {"lat": 20.9680, "lng": 105.9750}}
+      ],
+      "stops": [
+        {"order": 1, "name": "Ocean Park 2", "keywords": ["ocean park 2", "op2", "sao biển", "vinschool op2", "cọ xanh", "hải âu", "đảo dừa", "center point", "chà là", "ngọc trai", "san hô"]},
+        {"order": 2, "name": "Ocean Park 3", "keywords": ["ocean park 3", "op3", "wave park", "k-town", "the venice", "grand world", "phố biển", "water park", "ánh dương", "vịnh tây", "thời đại"]}
+      ],
+      "origin_keywords": ["thời đại", "thoi dai", "grand world", "the venice", "op2", "ocean park 2", "sao biển", "vinschool", "cọ xanh", "hải âu", "đảo dừa", "center point"],
+      "destination_keywords": ["chà là", "ngọc trai", "san hô", "wave park", "k-town", "grand world", "phố biển", "water park", "ánh dương", "vịnh tây", "thời đại", "op3", "ocean park 3"]
+    }
+  ]
+}
