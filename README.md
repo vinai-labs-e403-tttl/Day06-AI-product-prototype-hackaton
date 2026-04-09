@@ -2,7 +2,7 @@
 
 **Team 31 · E403 · Track: XanhSM · AI Thực Chiến 2026**
 
-> Người dùng VinBus mất thời gian tìm tuyến bus vì giao diện bản đồ phức tạp — FlowBot trả lời bằng ngôn ngữ tự nhiên, gợi ý tuyến bus phù hợp trong vài giây.
+> Người dùng VinBus mất thời gian tìm tuyến bus vì giao diện bản đồ phức tạp — FlowBot trả lời bằng ngôn ngữ tự nhiên, gợi ý tuyến bus phù hợp tại Hà Nội trong vài giây.
 
 ---
 
@@ -20,14 +20,14 @@
 
 ## Demo
 
-User nhập: _"Đi từ Landmark 81 về Bến Thành bằng bus"_
+User nhập: _"Đi từ Hồ Hoàn Kiếm đến Văn Miếu bằng bus"_
 → FlowBot gọi Google Maps Transit API + local VinBus DB → trả về số tuyến, trạm dừng, thời gian.
 
 ```
-🚌 Tuyến OCT1: Landmark 81 → Bến Thành
-⏱ Thời gian: 25 phút
-📍 Khoảng cách: 8.2 km
-🔁 Số trạm dừng: 6
+🚌 Tuyến 23: Hồ Hoàn Kiếm → Văn Miếu
+⏱ Thời gian: 12 phút
+📍 Khoảng cách: 2.1 km
+🔁 Số trạm dừng: 3
 ```
 
 ---

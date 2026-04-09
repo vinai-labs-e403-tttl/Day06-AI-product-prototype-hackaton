@@ -2,7 +2,7 @@
 
 ## Mô tả
 
-FlowBot là chatbot hội thoại giúp user tìm tuyến xe bus VinBus bằng ngôn ngữ tự nhiên (tiếng Việt và tiếng Anh). User nhập câu hỏi dạng "Đi từ Landmark 81 về Quận 1 thế nào?" → AI phân tích, gọi tool tìm tuyến thật, trả về số tuyến, trạm dừng, thời gian di chuyển — không hallucinate.
+FlowBot là chatbot hội thoại giúp user tìm tuyến xe bus VinBus bằng ngôn ngữ tự nhiên tại Hà Nội. User nhập câu hỏi dạng "Đi từ Hồ Hoàn Kiếm đến Văn Miếu thế nào?" → AI phân tích, gọi tool tìm tuyến thật, trả về số tuyến, trạm dừng, thời gian di chuyển — không hallucinate.
 
 ## Level: Working Prototype ⚡
 
