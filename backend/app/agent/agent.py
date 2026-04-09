@@ -232,7 +232,33 @@ def chat_stream(query: str, location: str = None, session_id: str = "default-ses
     yield json.dumps({"reply": final_reply, "suggested_routes": []}) + "\n"
 
 
-# 6. Chat loop
+def chat(query: str, conversation_id: str = "default") -> str:
+    """
+    Nhận câu hỏi từ user, trả về câu trả lời từ FlowBot.
+    conversation_id: định danh cuộc hội thoại (mỗi user/session dùng 1 id riêng)
+    """
+    history = conversation_store.get(conversation_id, [])
+    history.append(("human", query))
+
+    result = graph.invoke({"messages": history})
+
+    updated_messages = result["messages"]
+
+    # Lưu lại history, bỏ SystemMessage để tránh duplicate ở lần sau
+    conversation_store[conversation_id] = [
+        m for m in updated_messages
+        if not isinstance(m, SystemMessage)
+    ]
+
+    return updated_messages[-1].content
+
+
+def clear_conversation(conversation_id: str = "default"):
+    """Xóa lịch sử hội thoại của một conversation."""
+    conversation_store.pop(conversation_id, None)
+
+
+# 7. Chat loop
 if __name__ == "__main__":
     logger.info("=" * 60)
     logger.info("FlowBot - Trợ lý Tìm Tuyến Xe Bus (CLI Mode)")
@@ -243,6 +269,10 @@ if __name__ == "__main__":
         user_input = input("\nBạn: ").strip()
         if user_input.lower() in ("quit", "exit", "q"):
             break
+        if user_input.lower() == "clear":
+            clear_conversation("cli_session")
+            print("Đã xóa lịch sử hội thoại.")
+            continue
 
         logger.info("FlowBot đang tìm tuyến...")
         result = graph.invoke({"messages": [("human", user_input)]})

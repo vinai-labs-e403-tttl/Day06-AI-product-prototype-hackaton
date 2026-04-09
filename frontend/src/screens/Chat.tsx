@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion } from "motion/react";
-import { Send, Mic, Cpu, Radio, ChevronRight, LocateFixed, Loader2 } from "lucide-react";
+import { Send, Mic, Cpu, Radio, ChevronRight, LocateFixed, Loader2, Trash2 } from "lucide-react";
 import { Message, Route } from "../types";
 import { cn } from "../lib/utils";
 
@@ -13,6 +13,9 @@ interface ChatMessage extends Message {
 }
 
 export default function Chat({ onSelectRoute }: ChatProps) {
+  // Tạo conversation_id cố định cho session này
+  const conversationId = useMemo(() => `session_${Date.now()}`, []);
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
