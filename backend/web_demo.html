@@ -299,13 +299,13 @@
 
         <div class="preset-section">
             <h3>Dành cho bạn</h3>
-            <button class="preset-btn" onclick="quickAsk('Tôi muốn sang Grand World chơi. Đi bus nào rẻ nhất?')">
+            <button class="preset-btn" onclick="quickAsk('Cho mình hỏi các tuyến VinBus đi sang Grand World và Ocean City nhé!')">
                 <i data-lucide="palmtree"></i> Sang Grand World
             </button>
-            <button class="preset-btn" onclick="quickAsk('Làm sao để đi từ Royal City sang Ocean Park?')">
+            <button class="preset-btn" onclick="quickAsk('Làm sao để đi từ Royal City sang Ocean Park bằng VinBus?')">
                 <i data-lucide="navigation"></i> Đi Royal City - OP
             </button>
-            <button class="preset-btn" onclick="quickAsk('Hôm nay VinBus OCT1 chạy đến mấy giờ?')">
+            <button class="preset-btn" onclick="quickAsk('Tuyến VinBus OCT1 hôm nay chạy từ mấy giờ đến mấy giờ?')">
                 <i data-lucide="clock"></i> Lịch chạy OCT1
             </button>
         </div>
@@ -392,6 +392,50 @@
             if (indicator) indicator.remove();
         }
 
+        async function handleStreamingResponse(response) {
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let done = false;
+            let buffer = "";
+            let finalData = null;
+
+            while (!done) {
+                const { value, done: doneReading } = await reader.read();
+                done = doneReading;
+                buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+                
+                const lines = buffer.split("\n");
+                buffer = lines.pop() || "";
+
+                for (const line of lines) {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine) continue;
+                    try {
+                        const parsed = JSON.parse(trimmedLine);
+                        if (parsed.status) {
+                            // Cập nhật trạng thái suy nghĩ vào typing indicator
+                            updateTypingStatus(parsed.status);
+                        } else if (parsed.reply) {
+                            finalData = parsed;
+                        }
+                    } catch (e) {
+                        console.error("Error parsing stream chunk", e);
+                    }
+                }
+            }
+            return finalData;
+        }
+
+        function updateTypingStatus(status) {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.innerHTML = `<div class="typing-status" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: flex; align-items: center; gap: 8px;">
+                    <div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                    <span>${status}</span>
+                </div>`;
+            }
+        }
+
         async function autoSendLocation(coords) {
             appendMessage('bot', `📍 <strong>Đã lấy được GPS!</strong><br><small>Tọa độ: ${coords}</small><br>Đang đồng bộ với FlowBot...`);
             showTyping();
@@ -407,9 +451,9 @@
 
                 if (!response.ok) throw new Error("Server trả về lỗi " + response.status);
 
-                const data = await response.json();
+                const data = await handleStreamingResponse(response);
                 hideTyping();
-                appendMessage('bot', data.reply);
+                if (data) appendMessage('bot', data.reply);
             } catch (error) {
                 hideTyping();
                 appendMessage('bot', '<strong>⚠️ Lỗi hệ thống:</strong> Không thể gửi vị trí lên Server. ' + error.message);
@@ -440,9 +484,9 @@
 
                 if (!response.ok) throw new Error("Server error " + response.status);
 
-                const data = await response.json();
+                const data = await handleStreamingResponse(response);
                 hideTyping();
-                appendMessage('bot', data.reply);
+                if (data) appendMessage('bot', data.reply);
             } catch (error) {
                 hideTyping();
                 appendMessage('bot', '<strong>⚠️ Lỗi:</strong> Không thể kết nối tới Backend. Hãy chắc chắn Server đang chạy.');

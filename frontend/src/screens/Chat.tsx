@@ -23,6 +23,7 @@ export default function Chat({ onSelectRoute }: ChatProps) {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [thinkingStep, setThinkingStep] = useState<string>("");
   const [location, setLocation] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -83,23 +84,54 @@ export default function Chat({ onSelectRoute }: ChatProps) {
         }),
       });
 
-      const data = await response.json();
+      if (!response.body) throw new Error("ReadableStream not supported");
+      
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+      let buffer = "";
+      let finalData: any = null;
 
-      const botMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        text: data.reply || "Xin lỗi, tôi chưa hiểu ý bạn. Bạn có thể diễn đạt lại được không?",
-        sender: 'bot',
-        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        routes: data.suggested_routes?.map((r: any, i: number) => ({
-          id: r.bus_number || `route-${i}`,
-          name: `BUS ${r.bus_number || '?'}`,
-          eta: r.duration || 'N/A',
-          gate: `${r.departure_stop} → ${r.arrival_stop}`,
-          isLive: false,
-        })),
-      };
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+        
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || ""; // Lưu phần dư vào buffer
 
-      setMessages(prev => [...prev, botMessage]);
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine) continue;
+          try {
+            const parsed = JSON.parse(trimmedLine);
+            if (parsed.status) {
+              setThinkingStep(parsed.status);
+            } else if (parsed.reply) {
+              finalData = parsed;
+            }
+          } catch (e) {
+            console.error("Error parsing stream chunk", e);
+          }
+        }
+      }
+
+      if (finalData) {
+        const botMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          text: finalData.reply || "Xin lỗi, tôi chưa hiểu ý bạn. Bạn có thể diễn đạt lại được không?",
+          sender: 'bot',
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          routes: finalData.suggested_routes?.map((r: any, i: number) => ({
+            id: r.bus_number || `route-${i}`,
+            name: `BUS ${r.bus_number || '?'}`,
+            eta: r.duration || 'N/A',
+            gate: `${r.departure_stop} → ${r.arrival_stop}`,
+            isLive: false,
+          })),
+        };
+        setMessages(prev => [...prev, botMessage]);
+      }
     } catch (error) {
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -110,6 +142,7 @@ export default function Chat({ onSelectRoute }: ChatProps) {
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+      setThinkingStep("");
     }
   };
 
@@ -222,7 +255,7 @@ export default function Chat({ onSelectRoute }: ChatProps) {
             </div>
             <div className="flex items-center gap-2 text-outline">
               <Loader2 size={16} className="animate-spin" />
-              <span className="text-sm">FlowBot đang trả lời...</span>
+              <span className="text-sm">{thinkingStep || "FlowBot đang xử lý..."}</span>
             </div>
           </motion.div>
         )}

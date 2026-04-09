@@ -4,6 +4,11 @@ import math
 import re
 from pathlib import Path
 from langchain_core.tools import tool
+try:
+    from logger import logger
+except ImportError:
+    import logging
+    logger = logging.getLogger(__name__)
 
 
 class LocalRouteTool:
@@ -24,9 +29,10 @@ class LocalRouteTool:
 
     def find_route(self, origin: str, destination: str) -> dict:
         """
-        Tìm tuyến phù hợp từ database local.
+         Tìm tuyến phù hợp từ database local.
         Hỗ trợ nhận dạng tọa độ "lat,lng" cho điểm đi/đến.
         """
+        logger.debug(f"🔍 Đang tìm tuyến VinBus local: {origin} -> {destination}")
         actual_origin = origin
         actual_dest = destination
         origin_stop_info = None
@@ -42,6 +48,7 @@ class LocalRouteTool:
         if dest_coords:
             nearest = self.find_nearest_stop(dest_coords[0], dest_coords[1])
             actual_dest = nearest["name"]
+            logger.debug(f"📍 Tọa độ đích -> Trạm gần nhất: {actual_dest}")
 
         # 2. Xử lý trường hợp chỉ có điểm đi (để xác nhận vị trí)
         if not destination or destination.strip() == "":
@@ -80,6 +87,7 @@ class LocalRouteTool:
                 matched.append(route_info)
 
         if matched:
+            logger.info(f"✅ Tìm thấy {len(matched)} tuyến VinBus local")
             return {"found": True, "routes": matched, "message": None}
         
         return {
@@ -132,7 +140,10 @@ class LocalRouteTool:
                     "name": route["full_name"],
                     "stops_outbound": [s["name"] for s in route.get("stops_outbound", [])],
                     "stops_return": [s["name"] for s in route.get("stops_return", [])],
-                    "description": route["description"]
+                    "description": route["description"],
+                    "operating_hours": route.get("operating_hours"),
+                    "frequency_minutes": route.get("frequency_minutes"),
+                    "is_free": route.get("is_free", False)
                 }
         return None
 
