@@ -1,0 +1,6 @@
+{
+  "name": "TransitFlow",
+  "description": "Your Smart Transit Companion - AI-powered urban navigation and real-time tracking.",
+  "requestFramePermissions": ["geolocation"]
+}
+
