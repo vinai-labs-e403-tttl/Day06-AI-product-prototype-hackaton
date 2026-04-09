@@ -76,15 +76,31 @@ class LocalRouteTool:
             reverse_origin = self._keyword_match(dest_norm, route["origin_keywords"])
             reverse_dest = self._keyword_match(origin_norm, route["destination_keywords"])
 
-            if (origin_match and dest_match) or (reverse_origin and reverse_dest):
-                route_info = self._format_route(route, is_reverse=(reverse_origin and reverse_dest))
-                if origin_stop_info:
-                    route_info["current_location_context"] = {
-                        "nearest_stop": origin_stop_info["name"],
-                        "distance_m": round(origin_stop_info["distance_m"]),
-                        "note": f"Bạn đang ở gần trạm {origin_stop_info['name']} ({round(origin_stop_info['distance_m'])}m)"
-                    }
-                matched.append(route_info)
+            # Fallback thông minh: cho phép match theo các trạm trung gian trong route
+            # Ví dụ: "Royal City -> Times City" cần match OCT1 dù Times City không nằm trong destination_keywords.
+            if not ((origin_match and dest_match) or (reverse_origin and reverse_dest)):
+                stop_origin_match, stop_origin_order = self._match_stop_keyword(origin_norm, route)
+                stop_dest_match, stop_dest_order = self._match_stop_keyword(dest_norm, route)
+
+                if stop_origin_match and stop_dest_match:
+                    # Nếu không xác định được thứ tự thì mặc định chiều thuận
+                    if stop_origin_order is not None and stop_dest_order is not None:
+                        is_reverse = stop_origin_order > stop_dest_order
+                    else:
+                        is_reverse = False
+                else:
+                    continue
+            else:
+                is_reverse = reverse_origin and reverse_dest
+
+            route_info = self._format_route(route, is_reverse=is_reverse)
+            if origin_stop_info:
+                route_info["current_location_context"] = {
+                    "nearest_stop": origin_stop_info["name"],
+                    "distance_m": round(origin_stop_info["distance_m"]),
+                    "note": f"Bạn đang ở gần trạm {origin_stop_info['name']} ({round(origin_stop_info['distance_m'])}m)"
+                }
+            matched.append(route_info)
 
         if matched:
             logger.info(f"✅ Tìm thấy {len(matched)} tuyến VinBus local")
@@ -180,6 +196,20 @@ class LocalRouteTool:
     @staticmethod
     def _keyword_match(text: str, keywords: list) -> bool:
         return any(kw in text for kw in keywords)
+
+    @staticmethod
+    def _match_stop_keyword(text: str, route: dict) -> tuple[bool, int | None]:
+        """
+        Kiểm tra text có khớp với một điểm dừng trong route không.
+        Trả về (matched, stop_order) để có thể suy ra chiều đi nếu cả điểm đi/đến đều khớp.
+        """
+        stops = route.get("stops", [])
+        for stop in stops:
+            stop_name = (stop.get("name") or "").lower()
+            stop_keywords = [k.lower() for k in stop.get("keywords", [])]
+            if text in stop_name or any(kw in text for kw in stop_keywords):
+                return True, stop.get("order")
+        return False, None
 
     @staticmethod
     def _format_route(route: dict, is_reverse: bool = False) -> dict:

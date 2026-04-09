@@ -9,8 +9,8 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
 import os
 import sys
-from datetime import datetime
-import pytz # Cần thiết để đảm bảo đúng múi giờ Việt Nam
+import re
+from datetime import datetime, timezone, timedelta
 
 # Đảm bảo thư mục app/tools có thể được import
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -18,6 +18,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from tools.transit_route_tool import find_transit_route
 from tools.local_route_tool import find_local_vinbus_route, get_route_details
 from logger import logger
+
+VN_TZ = timezone(timedelta(hours=7))
 
 # Setup state
 class State(TypedDict):
@@ -51,6 +53,83 @@ builder.add_edge("tools", "agent")
 memory = MemorySaver()
 graph = builder.compile(checkpointer=memory)
 
+
+def _extract_origin_destination(query: str) -> tuple[str, str] | None:
+    """
+    Trích xuất nhanh origin/destination từ câu hỏi kiểu "đi từ A đến B".
+    Chỉ dùng để pre-check local route, không thay thế hoàn toàn NLU của model.
+    """
+    q = query.strip()
+    patterns = [
+        r"(?:đi\s+)?từ\s+(.+?)\s+đến\s+(.+)",
+        r"from\s+(.+?)\s+to\s+(.+)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, q, flags=re.IGNORECASE)
+        if match:
+            origin = match.group(1).strip(" ,.?")
+            destination = match.group(2).strip(" ,.?")
+            if origin and destination:
+                return origin, destination
+    return None
+
+
+def _build_route_hints(query: str) -> str:
+    """
+    Pre-check local + transit để giảm trường hợp model bỏ sót tuyến local
+    và tăng khả năng đưa ra nhiều phương án.
+    """
+    od = _extract_origin_destination(query)
+    if not od:
+        return ""
+
+    origin, destination = od
+    hints: list[str] = []
+
+    try:
+        local_result = find_local_vinbus_route.invoke({"origin": origin, "destination": destination})
+        if local_result.get("found") and local_result.get("routes"):
+            route_ids = [r.get("id", "") for r in local_result["routes"] if r.get("id")]
+            first_route = local_result["routes"][0]
+            summary = first_route.get("stop_summary", "")
+            hints.append(
+                f"[Hệ thống: Kết quả local VinBus ưu tiên cho '{origin}' -> '{destination}': "
+                f"{', '.join(route_ids)}. "
+                f"Ví dụ lộ trình: {summary}]"
+            )
+    except Exception as e:
+        logger.warning(f"⚠️ Pre-check local route thất bại: {str(e)}")
+
+    try:
+        transit_result = find_transit_route.invoke({"origin": origin, "destination": destination})
+        if transit_result.get("success") and transit_result.get("routes"):
+            transit_routes = transit_result.get("routes", [])[:3]
+            summary_parts = []
+            for idx, route in enumerate(transit_routes, 1):
+                duration = route.get("total_duration_minutes")
+                distance = route.get("total_distance_km")
+                steps = route.get("transit_steps", [])
+                line_names = []
+                for step in steps:
+                    line = step.get("line_short_name") or step.get("line_name")
+                    if line:
+                        line_names.append(str(line))
+                line_names = list(dict.fromkeys(line_names))[:3]
+                route_label = f"PA{idx}: {duration}p, {distance}km"
+                if line_names:
+                    route_label += f", tuyến {', '.join(line_names)}"
+                summary_parts.append(route_label)
+
+            if summary_parts:
+                hints.append(
+                    f"[Hệ thống: Có thêm phương án transit cho '{origin}' -> '{destination}': "
+                    f"{' | '.join(summary_parts)}]"
+                )
+    except Exception as e:
+        logger.warning(f"⚠️ Pre-check transit route thất bại: {str(e)}")
+
+    return "\n".join(hints)
+
 def chat(query: str, location: str = None, session_id: str = "default-session") -> str:
     """
     Hàm chat chính hỗ trợ bộ nhớ và vị trí.
@@ -63,13 +142,16 @@ def chat(query: str, location: str = None, session_id: str = "default-session") 
         graph.invoke({"messages": [SystemMessage(content=SYSTEM_PROMPT)]}, config)
 
     # 2. Chuẩn bị tin nhắn User
-    now = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
+    now = datetime.now(VN_TZ)
     current_time_str = now.strftime("%H:%M, %A ngày %d/%m/%Y")
     
     input_text = query
     context_prefix = f"[Hệ thống: Thời gian hiện tại là {current_time_str}]"
     if location:
         context_prefix += f"\n[Hệ thống: Vị trí của tôi hiện tại là {location}]"
+    route_hints = _build_route_hints(query)
+    if route_hints:
+        context_prefix += f"\n{route_hints}"
     
     input_text = f"{context_prefix}\n\n{query}"
 
@@ -94,13 +176,16 @@ def chat_stream(query: str, location: str = None, session_id: str = "default-ses
         graph.invoke({"messages": [SystemMessage(content=SYSTEM_PROMPT)]}, config)
 
     # 2. Chuẩn bị tin nhắn User
-    now = datetime.now(pytz.timezone('Asia/Ho_Chi_Minh'))
+    now = datetime.now(VN_TZ)
     current_time_str = now.strftime("%H:%M, %A ngày %d/%m/%Y")
     
     input_text = query
     context_prefix = f"[Hệ thống: Thời gian hiện tại là {current_time_str}]"
     if location:
         context_prefix += f"\n[Hệ thống: Vị trí của tôi hiện tại là {location}]"
+    route_hints = _build_route_hints(query)
+    if route_hints:
+        context_prefix += f"\n{route_hints}"
     
     input_text = f"{context_prefix}\n\n{query}"
 

@@ -32,8 +32,8 @@
         {"order": 4, "name": "Ocean Park 2", "keywords": ["ocean park 2", "op2", "vinschool op2", "vincom op2", "kinh đô ánh sáng"]},
         {"order": 5, "name": "Ocean Park 3", "keywords": ["ocean park 3", "op3", "water park", "wave park", "grand world", "venice", "phố biển", "thời đại"]}
       ],
-      "origin_keywords": ["royal city", "nguyen trai", "nguyễn trãi", "royal", "vũ môn", "thượng đình", "bảo tàng pkkq", "times city", "minh khai", "vin university", "vinuni"],
-      "destination_keywords": ["ocean park", "ocean city", "grand world", "mega grand world", "công viên sóng", "op3", "op2", "ocean park 2", "ocean park 3", "vinwonder", "thời đại", "phố biển", "vin university", "vinuni"]
+      "origin_keywords": ["royal city", "nguyen trai", "nguyễn trãi", "royal", "vũ môn", "thượng đình", "bảo tàng pkkq", "times city", "minh khai", "vin university", "vin uni", "vinuni"],
+      "destination_keywords": ["ocean park", "ocean city", "grand world", "mega grand world", "công viên sóng", "op3", "op2", "ocean park 2", "ocean park 3", "vinwonder", "thời đại", "phố biển", "vin university", "vin uni", "vinuni"]
     },
     {
       "id": "OCT2",
@@ -71,8 +71,8 @@
         {"order": 10, "name": "Công viên Vinwonder Water Park", "keywords": ["vinwonder water park", "water park", "công viên sóng", "cong vien song", "grand world", "mega grand world"]},
         {"order": 11, "name": "Phân khu Thời Đại", "keywords": ["thời đại", "thoi dai", "đại lộ bốn mùa", "dai lo bon mua"]}
       ],
-      "origin_keywords": ["nhà hát lớn", "nha hat lon", "bờ hồ", "bo ho", "hoan kiem", "hoàn kiếm", "phố cổ", "pho co", "opera", "vườn hoa con cóc", "bà triệu", "ba trieu", "vincom bà triệu", "vincom ba trieu", "trần khát chân", "tran khat chan", "ô đống mác", "o dong mac", "vin university", "vinuni"],
-      "destination_keywords": ["ocean park", "ocean city", "grand world", "mega grand world", "vinwonder", "water park", "wave park", "the venice", "phố biển", "op2", "op3", "ocean park 2", "ocean park 3", "centerpoint", "làng sake", "vin university", "vinuni"]
+      "origin_keywords": ["nhà hát lớn", "nha hat lon", "bờ hồ", "bo ho", "hoan kiem", "hoàn kiếm", "phố cổ", "pho co", "opera", "vườn hoa con cóc", "bà triệu", "ba trieu", "vincom bà triệu", "vincom ba trieu", "trần khát chân", "tran khat chan", "ô đống mác", "o dong mac", "vin university", "vin uni", "vinuni"],
+      "destination_keywords": ["ocean park", "ocean city", "grand world", "mega grand world", "vinwonder", "water park", "wave park", "the venice", "phố biển", "op2", "op3", "ocean park 2", "ocean park 3", "centerpoint", "làng sake", "vin university", "vin uni", "vinuni"]
     },
     {
       "id": "OCP1",
@@ -94,11 +94,11 @@
         {"order": 12, "name": "Tòa nhà S1.10", "coords": {"lat": 20.9940, "lng": 105.9390}}
       ],
       "stops": [
-        {"order": 1, "name": "Ocean Park 1", "keywords": ["ocean park 1", "op1", "vinuni", "vincom ocean park", "hải âu", "sao biển", "biển hồ", "lý thánh tông", "s1.10", "hải đăng", "brighton college", "đại dương"]},
+        {"order": 1, "name": "Ocean Park 1", "keywords": ["ocean park 1", "op1", "vinuni", "vin uni", "vin university", "vincom ocean park", "hải âu", "sao biển", "biển hồ", "lý thánh tông", "s1.10", "hải đăng", "brighton college", "đại dương"]},
         {"order": 2, "name": "Ocean Park 2", "keywords": ["ocean park 2", "op2", "s2.15", "vinschool op2", "vincom op2", "kinh đô ánh sáng", "ngọc trai", "san hô"]},
         {"order": 3, "name": "Ocean Park 3", "keywords": ["ocean park 3", "op3", "wave park", "k-town", "the venice", "grand world", "phố biển", "water park", "thời đại"]}
       ],
-      "origin_keywords": ["ocean park 1", "op1", "vinuni", "vin university", "hải âu", "sao biển", "biển hồ", "s1.10", "hải đăng", "đại dương", "vincom ocean park"],
+      "origin_keywords": ["ocean park 1", "op1", "vinuni", "vin uni", "vin university", "hải âu", "sao biển", "biển hồ", "s1.10", "hải đăng", "đại dương", "vincom ocean park"],
       "destination_keywords": ["ocean park 2", "ocean park 3", "op2", "op3", "grand world", "water park", "wave park", "venice", "thời đại", "phố biển", "kinh đô ánh sáng", "k-town"]
     },
     {

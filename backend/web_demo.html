@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowBot - Trợ Lý VinBus Thông Minh</title>
+    <title>BusMate - Trợ Lý VinBus Thông Minh</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -44,6 +44,14 @@
             display: flex;
             flex-direction: column;
             gap: 2rem;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 20;
         }
 
         .logo {
@@ -104,6 +112,25 @@
             align-items: center;
         }
 
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-btn {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            background: var(--glass);
+            color: var(--text-main);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+        }
+
         .status-badge {
             padding: 6px 14px;
             background: rgba(0, 141, 78, 0.2);
@@ -126,6 +153,23 @@
             gap: 1.5rem;
         }
 
+        .empty-state {
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 1rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            max-width: 740px;
+        }
+
+        .empty-actions {
+            margin-top: 0.75rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
         /* Message Bubbles */
         .message {
             max-width: 80%;
@@ -134,6 +178,15 @@
             line-height: 1.6;
             animation: fadeIn 0.4s ease-out;
             position: relative;
+        }
+
+        .typing-status {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         @keyframes fadeIn {
@@ -213,6 +266,7 @@
         .btn-gps {
             background: var(--glass);
             color: var(--text-muted);
+            border: 1px solid var(--glass-border);
         }
 
         .btn-gps.active {
@@ -223,6 +277,11 @@
         .btn-send {
             background: var(--primary);
             color: white;
+            box-shadow: 0 8px 22px rgba(0, 141, 78, 0.35);
+        }
+
+        .btn-send:hover:not(:disabled) {
+            transform: translateY(-1px);
         }
 
         .btn-send:disabled {
@@ -238,6 +297,62 @@
 
         .message br {
             margin-bottom: 8px;
+        }
+
+        .routes-group {
+            display: grid;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .route-card {
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 0.75rem 0.9rem;
+        }
+
+        .route-line {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .route-meta {
+            font-size: 0.86rem;
+            color: var(--text-muted);
+        }
+
+        .route-details {
+            margin-top: 10px;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            opacity: 0.95;
+        }
+
+        .quick-chips {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .chip {
+            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-main);
+            border-radius: 999px;
+            padding: 0.45rem 0.75rem;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chip:hover {
+            background: rgba(0, 141, 78, 0.2);
+            border-color: var(--primary-light);
         }
 
         /* Loader */
@@ -285,16 +400,104 @@
             background: var(--glass-border);
             border-radius: 10px;
         }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 280px;
+                padding: 1.25rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                overflow: hidden;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+                z-index: 30;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.open {
+                display: block;
+            }
+
+            .menu-btn {
+                display: inline-flex;
+            }
+
+            .chat-header {
+                padding: 1rem;
+                gap: 10px;
+            }
+
+            .status-badge {
+                font-size: 0.72rem;
+                padding: 5px 10px;
+            }
+
+            .chat-messages {
+                padding: 1rem;
+                gap: 1rem;
+            }
+
+            .message {
+                max-width: 92%;
+                padding: 0.9rem;
+                font-size: 0.95rem;
+            }
+
+            .input-area {
+                padding: 1rem;
+            }
+
+            .input-container {
+                border-radius: 14px;
+                padding: 6px;
+                gap: 6px;
+            }
+
+            .icon-btn {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+            }
+
+            input {
+                padding: 10px;
+                font-size: 0.95rem;
+            }
+
+            .quick-chips {
+                gap: 6px;
+                margin-top: 8px;
+            }
+
+            .chip {
+                font-size: 0.78rem;
+            }
+        }
     </style>
 </head>
 
 <body>
 
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo">
             <i data-lucide="bus"></i>
-            FLOWBOT
+            <span id="botNameLogo">BUSMATE</span>
         </div>
 
         <div class="preset-section">
@@ -314,7 +517,7 @@
             <div
                 style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 12px; font-size: 0.85rem; color: var(--text-muted);">
                 <i data-lucide="info" style="width:16px; margin-bottom: 5px;"></i><br>
-                FlowBot sử dụng Hybrid AI để kết hợp dữ liệu Google Maps và VinBus Local Routes.
+                <span id="botNameInfo">BusMate</span> sử dụng Hybrid AI để kết hợp dữ liệu Google Maps và VinBus Local Routes.
             </div>
         </div>
     </div>
@@ -322,9 +525,14 @@
     <!-- Main Content -->
     <div class="main-container">
         <div class="chat-header">
-            <div>
-                <h1 style="font-size: 1.1rem; font-weight: 600;">Hỗ trợ tìm đường VinBus</h1>
-                <p style="font-size: 0.8rem; color: var(--text-muted);">Hệ thống AI Bus Assistant v2.0</p>
+            <div class="header-left">
+                <button class="menu-btn" onclick="toggleSidebar()" title="Mở menu">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div>
+                    <h1 style="font-size: 1.1rem; font-weight: 600;">Hỗ trợ tìm đường VinBus</h1>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);"><span id="botNameHeader">BusMate</span> - AI Bus Assistant v2.0</p>
+                </div>
             </div>
             <div class="status-badge">
                 <div style="width: 8px; height: 8px; background: #4CAF50; border-radius: 50%;"></div>
@@ -334,25 +542,41 @@
 
         <div class="chat-messages" id="chatArea">
             <div class="message bot-msg">
-                Xin chào! Tôi là <strong>FlowBot</strong>. 🚌<br>
+                Xin chào! Tôi là <strong id="botNameWelcome">BusMate</strong>. 🚌<br>
                 Tôi có thể giúp bạn tìm các tuyến <strong>VinBus miễn phí</strong> (OCT/OCP) hoặc các tuyến bus công
                 cộng (E01-E09).<br><br>
                 Bạn muốn đi đâu hôm nay? Đừng quên bật <strong>GPS</strong> để tôi chỉ đường chính xác nhất từ vị trí
                 của bạn nhé!
             </div>
+            <div class="empty-state" id="emptyState">
+                Bắt đầu nhanh với một trong các tác vụ bên dưới:
+                <div class="empty-actions">
+                    <button class="chip" onclick="quickAsk('Đi từ Royal City đến Times City bằng bus')">Tìm tuyến Royal -> Times</button>
+                    <button class="chip" onclick="quickAsk('Tuyến OCT1 hôm nay chạy đến mấy giờ?')">Xem lịch OCT1</button>
+                    <button class="chip" onclick="toggleGPS()">Bật GPS của tôi</button>
+                </div>
+            </div>
         </div>
 
         <div class="input-area">
-            <div class="input-container">
-                <button class="icon-btn btn-gps" id="gpsBtn" onclick="toggleGPS()" title="Bật/Tắt định vị GPS">
-                    <i data-lucide="map-pin"></i>
-                </button>
-                <input type="text" id="userInput"
-                    placeholder="Nhập câu hỏi của bạn tại đây... (VD: Đi từ Royal City sang Grand World)"
-                    onkeypress="handleKey(event)">
-                <button class="icon-btn btn-send" id="sendBtn" onclick="sendMessage()">
-                    <i data-lucide="send"></i>
-                </button>
+            <div style="width: 100%; max-width: 800px;">
+                <div class="input-container">
+                    <button class="icon-btn btn-gps" id="gpsBtn" onclick="toggleGPS()" title="Bật/Tắt định vị GPS">
+                        <i data-lucide="map-pin"></i>
+                    </button>
+                    <input type="text" id="userInput"
+                        placeholder="Nhập câu hỏi của bạn tại đây... (VD: Đi từ Royal City sang Grand World)"
+                        onkeypress="handleKey(event)">
+                    <button class="icon-btn btn-send" id="sendBtn" onclick="sendMessage()" title="Gửi câu hỏi">
+                        <i data-lucide="send"></i>
+                    </button>
+                </div>
+                <div class="quick-chips">
+                    <button class="chip" onclick="quickAsk('Đi từ Royal City đến Times City bằng bus')">Royal -> Times</button>
+                    <button class="chip" onclick="quickAsk('Đi từ Royal City đến Ocean Park bằng bus')">Royal -> Ocean Park</button>
+                    <button class="chip" onclick="quickAsk('Thông tin tuyến OCT1')">Thông tin OCT1</button>
+                    <button class="chip" onclick="quickAsk('Tuyến bus nào gần vị trí của tôi nhất?')">Tuyến gần tôi</button>
+                </div>
             </div>
         </div>
     </div>
@@ -361,20 +585,51 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
+        const BOT_NAME = "BusMate";
         let currentCoords = null;
         const backendUrl = "http://localhost:8000/chat";
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        let loadingFallbackTimer = null;
+
+        // Bind bot name once for all UI labels
+        document.title = `${BOT_NAME} - Trợ Lý VinBus Thông Minh`;
+        document.getElementById('botNameLogo').textContent = BOT_NAME.toUpperCase();
+        document.getElementById('botNameInfo').textContent = BOT_NAME;
+        document.getElementById('botNameHeader').textContent = BOT_NAME;
+        document.getElementById('botNameWelcome').textContent = BOT_NAME;
 
         function appendMessage(sender, text) {
             const chatArea = document.getElementById('chatArea');
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState && sender === 'user') emptyState.style.display = 'none';
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${sender === 'user' ? 'user-msg' : 'bot-msg'}`;
 
-            // Simple markdown-ish formatting for line breaks and bold
-            const formattedText = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            msgDiv.innerHTML = formattedText;
+            // Nếu nhận được nội dung dạng danh sách tuyến, render theo card để dễ đọc.
+            msgDiv.innerHTML = renderBotContent(text, sender);
 
             chatArea.appendChild(msgDiv);
             chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function renderBotContent(text, sender) {
+            if (sender === 'user') {
+                return text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            }
+
+            const lines = text.split('\n').map((line) => line.trim()).filter(Boolean);
+            const routeLines = lines.filter((line) => line.startsWith('🚌 Tuyến'));
+            if (!routeLines.length) {
+                return text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            }
+
+            const cards = routeLines.map((line) => {
+                const cleaned = line.replace(/^🚌\s*/, '');
+                return `<div class="route-card"><div class="route-line">${cleaned}</div><div class="route-meta">Phương án bus phù hợp theo yêu cầu của bạn.</div></div>`;
+            }).join('');
+            const fullFormatted = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            return `<div class="routes-group">${cards}</div><div class="route-details">${fullFormatted}</div>`;
         }
 
         function showTyping() {
@@ -385,11 +640,20 @@
             loader.innerHTML = '<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
             chatArea.appendChild(loader);
             chatArea.scrollTop = chatArea.scrollHeight;
+
+            if (loadingFallbackTimer) clearTimeout(loadingFallbackTimer);
+            loadingFallbackTimer = setTimeout(() => {
+                updateTypingStatus('Mình đang đối chiếu nhiều phương án, bạn chờ chút nhé...');
+            }, 3000);
         }
 
         function hideTyping() {
             const indicator = document.getElementById('typingIndicator');
             if (indicator) indicator.remove();
+            if (loadingFallbackTimer) {
+                clearTimeout(loadingFallbackTimer);
+                loadingFallbackTimer = null;
+            }
         }
 
         async function handleStreamingResponse(response) {
@@ -413,8 +677,8 @@
                     try {
                         const parsed = JSON.parse(trimmedLine);
                         if (parsed.status) {
-                            // Cập nhật trạng thái suy nghĩ vào typing indicator
-                            updateTypingStatus(parsed.status);
+                            // Không lộ trạng thái kỹ thuật nội bộ; chỉ hiển thị mức vừa phải.
+                            updateTypingStatus(mapBackendStatus(parsed.status));
                         } else if (parsed.reply) {
                             finalData = parsed;
                         }
@@ -426,10 +690,17 @@
             return finalData;
         }
 
+        function mapBackendStatus(raw) {
+            const status = (raw || '').toLowerCase();
+            if (status.includes('chuẩn bị')) return 'Đã có kết quả';
+            if (status.includes('tổng hợp') || status.includes('tra cứu')) return 'Đang tìm tuyến phù hợp...';
+            return 'Đang xử lý yêu cầu...';
+        }
+
         function updateTypingStatus(status) {
             const indicator = document.getElementById('typingIndicator');
             if (indicator) {
-                indicator.innerHTML = `<div class="typing-status" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: flex; align-items: center; gap: 8px;">
+                indicator.innerHTML = `<div class="typing-status">
                     <div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
                     <span>${status}</span>
                 </div>`;
@@ -437,7 +708,7 @@
         }
 
         async function autoSendLocation(coords) {
-            appendMessage('bot', `📍 <strong>Đã lấy được GPS!</strong><br><small>Tọa độ: ${coords}</small><br>Đang đồng bộ với FlowBot...`);
+            appendMessage('bot', `📍 <strong>Đã lấy được GPS!</strong><br><small>Tọa độ: ${coords}</small><br>Đang đồng bộ với ${BOT_NAME}...`);
             showTyping();
             try {
                 const response = await fetch(backendUrl, {
@@ -471,6 +742,7 @@
             input.value = '';
 
             showTyping();
+            updateTypingStatus('Đang xử lý yêu cầu...');
 
             try {
                 const response = await fetch(backendUrl, {
@@ -534,6 +806,20 @@
             document.getElementById('userInput').value = text;
             sendMessage();
         }
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('open');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('open');
+        }
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) closeSidebar();
+        });
     </script>
 </body>
 
