@@ -29,15 +29,11 @@ TÍNH NĂNG ĐẶC BIỆT:
 - Hỗ trợ cả tiếng Anh cho tourists
 - Nếu user correction ("Sai tuyến"), ghi nhận để cải thiện
 
-KHI CẦN TÌM TUYẾN CỤ THỂ:
-Dùng format JSON để gọi tool:
-{
-  "tool": "find_bus_route",
-  "args": {
-    "origin": "địa chỉ hoặc tên điểm đi",
-    "destination": "địa chỉ hoặc tên điểm đến"
-  }
-}"""
+TOOLS:
+Bạn có các tools sau. Khi cần tìm tuyến bus cụ thể, gọi tool find_bus_route.
+
+Available tools:
+- find_bus_route: Tìm tuyến bus giữa hai địa điểm. Args: origin (string), destination (string)"""
 
     def _get_route_tool(self):
         """Lazy load route tool to avoid import errors if not configured."""
@@ -47,37 +43,126 @@ Dùng format JSON để gọi tool:
         return self.route_tool
 
     def get_route_suggestion(self, query: str) -> dict:
-        """Process a route query and return suggestion with metadata."""
-        # Check for route search intent
-        route_keywords = ["đi từ", "từ", "đến", "về", "how do i get", "from", "to", "go to"]
-        needs_route_search = any(kw in query.lower() for kw in route_keywords)
+        """Process a route query using an agent loop with tool calling."""
+        tools = [
+            {
+                "type": "function",
+                "name": "find_bus_route",
+                "description": "Tìm tuyến bus giữa hai địa điểm sử dụng Google Maps API",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "origin": {
+                            "type": "string",
+                            "description": "Địa chỉ hoặc tên điểm đi"
+                        },
+                        "destination": {
+                            "type": "string",
+                            "description": "Địa chỉ hoặc tên điểm đến"
+                        }
+                    },
+                    "required": ["origin", "destination"]
+                }
+            }
+        ]
 
-        if needs_route_search:
-            # Extract origin/destination from query
-            extraction = self._extract_locations(query)
-            if extraction["origin"] and extraction["destination"]:
-                try:
-                    tool = self._get_route_tool()
-                    route_result = tool.find_bus_route(
-                        extraction["origin"],
-                        extraction["destination"]
-                    )
-                    if route_result["success"] and route_result["routes"]:
-                        return self._format_route_response(route_result, extraction)
-                except Exception:
-                    pass  # Fall through to AI response
+        messages = [
+            {"role": "system", "content": self.system_prompt},
+            {"role": "user", "content": query}
+        ]
 
-        # Fallback: use AI response directly
-        response = self.client.responses.create(
-            model=self.model,
-            instructions=self.system_prompt,
-            input=query,
-        )
+        max_iterations = 10
+        for _ in range(max_iterations):
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                tools=tools,
+                tool_choice="auto"
+            )
+
+            message = response.choices[0].message
+
+            if message.tool_calls:
+                # Agent wants to call a tool
+                for tool_call in message.tool_calls:
+                    if tool_call.function.name == "find_bus_route":
+                        args = json.loads(tool_call.function.arguments)
+                        route_result = self._call_route_tool(args["origin"], args["destination"])
+                        messages.append(message)
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "content": json.dumps(route_result)
+                        })
+                    else:
+                        # Unknown tool
+                        messages.append(message)
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "content": json.dumps({"error": "Unknown tool"})
+                        })
+                # Continue loop to process tool result
+                continue
+            else:
+                # Final response from agent
+                return {
+                    "reply": message.content,
+                    "suggested_routes": None,
+                    "confidence": 0.85,
+                }
+
+        # Max iterations reached
+        return {
+            "reply": "Xin lỗi, tôi cần thêm thời gian để xử lý yêu cầu của bạn. Bạn có thể thử hỏi cụ thể hơn không?",
+            "suggested_routes": None,
+            "confidence": 0.5,
+        }
+
+    def _call_route_tool(self, origin: str, destination: str) -> dict:
+        """Call the route tool and format the result."""
+        try:
+            tool = self._get_route_tool()
+            route_result = tool.find_bus_route(origin, destination)
+            return route_result
+        except Exception as e:
+            return {
+                "success": False,
+                "routes": [],
+                "message": f"Lỗi khi tìm tuyến: {str(e)}"
+            }
+
+    def _format_route_response(self, route_result: dict, origin: str, destination: str) -> dict:
+        """Format Google Maps route result into user-friendly response."""
+        route = route_result["routes"][0]
+        bus_steps = route["bus_steps"]
+
+        if not bus_steps:
+            return {
+                "reply": f"Tuyến bus từ {origin} đến {destination} không tìm thấy. Bạn có thể kiểm tra trên bản đồ VinBus.",
+                "suggested_routes": [],
+                "confidence": 0.3,
+            }
+
+        # Format bus info
+        bus_info_parts = []
+        for step in bus_steps:
+            bus_info_parts.append(
+                f"Bus {step['bus_number']}: {step['departure_stop']} → {step['arrival_stop']} ({step['num_stops']} trạm dừng)"
+            )
+
+        bus_lines = " | ".join([s["bus_number"] for s in bus_steps])
+
+        reply = f"Tìm được tuyến bus từ {origin} đến {destination}:\n\n"
+        reply += f"⏱ {route['total_duration']} · 🚌 {route['total_distance']}\n\n"
+
+        for step in bus_steps:
+            reply += f"🚌 Bus {step['bus_number']}: {step['departure_stop']} → {step['arrival_stop']} ({step['num_stops']} trạm, {step['duration']})\n"
 
         return {
-            "reply": response.output_text,
-            "suggested_routes": None,
-            "confidence": 0.85,
+            "reply": reply,
+            "suggested_routes": bus_steps,
+            "confidence": 0.9,
         }
 
     def _extract_locations(self, query: str) -> dict:
@@ -100,36 +185,3 @@ Return only JSON."""
             response_format={"type": "json_object"}
         )
         return json.loads(response.choices[0].message.content)
-
-    def _format_route_response(self, route_result: dict, extraction: dict) -> dict:
-        """Format Google Maps route result into user-friendly response."""
-        route = route_result["routes"][0]
-        bus_steps = route["bus_steps"]
-
-        if not bus_steps:
-            return {
-                "reply": f"Tuyến bus từ {extraction['origin']} đến {extraction['destination']} không tìm thấy. Bạn có thể kiểm tra trên bản đồ VinBus.",
-                "suggested_routes": [],
-                "confidence": 0.3,
-            }
-
-        # Format bus info
-        bus_info_parts = []
-        for step in bus_steps:
-            bus_info_parts.append(
-                f"Bus {step['bus_number']}: {step['departure_stop']} → {step['arrival_stop']} ({step['num_stops']} trạm dừng)"
-            )
-
-        bus_lines = " | ".join([s["bus_number"] for s in bus_steps])
-
-        reply = f"Tìm được tuyến bus từ {extraction['origin']} đến {extraction['destination']}:\n\n"
-        reply += f"⏱ {route['total_duration']} · 🚌 {route['total_distance']}\n\n"
-
-        for step in bus_steps:
-            reply += f"🚌 Bus {step['bus_number']}: {step['departure_stop']} → {step['arrival_stop']} ({step['num_stops']} trạm, {step['duration']})\n"
-
-        return {
-            "reply": reply,
-            "suggested_routes": bus_steps,
-            "confidence": 0.9,
-        }
