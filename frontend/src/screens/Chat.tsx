@@ -23,11 +23,41 @@ export default function Chat({ onSelectRoute }: ChatProps) {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [location, setLocation] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Trình duyệt không hỗ trợ GPS.");
+      return;
+    }
+    
+    setIsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = `${position.coords.latitude}, ${position.coords.longitude}`;
+        setLocation(coords);
+        setIsLoading(false);
+        // Thong bao cho user
+        const sysMsg: ChatMessage = {
+          id: Date.now().toString(),
+          text: `📍 GPS đã được kích hoạt: ${coords}`,
+          sender: 'bot',
+          timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages(prev => [...prev, sysMsg]);
+      },
+      (error) => {
+        console.error(error);
+        setIsLoading(false);
+        alert("Không thể lấy vị trí. Vui lòng kiểm tra quyền truy cập.");
+      }
+    );
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -47,7 +77,10 @@ export default function Chat({ onSelectRoute }: ChatProps) {
       const response = await fetch("http://localhost:8000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: input }),
+        body: JSON.stringify({ 
+          query: input,
+          location: location 
+        }),
       });
 
       const data = await response.json();
@@ -199,12 +232,19 @@ export default function Chat({ onSelectRoute }: ChatProps) {
       {/* Floating Input Bar */}
       <div className="fixed bottom-24 left-0 w-full px-4 flex justify-center z-40 pointer-events-none">
         <div className="w-full max-w-2xl bg-white/80 backdrop-blur-2xl rounded-2xl p-2 shadow-2xl border border-primary/10 flex items-center gap-2 pointer-events-auto">
-          <button className="w-12 h-12 flex items-center justify-center text-outline hover:text-primary transition-colors">
-            <Mic size={24} />
+          <button 
+            onClick={handleGetLocation}
+            className={cn(
+                "w-12 h-12 flex items-center justify-center transition-colors rounded-xl",
+                location ? "bg-primary/10 text-primary" : "text-outline hover:text-primary"
+            )}
+            title="Lấy vị trí GPS"
+          >
+            <LocateFixed size={24} />
           </button>
           <input
             className="flex-1 bg-transparent border-none focus:ring-0 text-on-surface-variant font-sans text-base placeholder:text-outline/60 outline-hidden"
-            placeholder="Where would you like to go?"
+            placeholder="Bạn muốn đi đâu?"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}

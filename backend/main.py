@@ -1,43 +1,42 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from dotenv import load_dotenv
-import os
+from typing import Optional
+import uvicorn
 import sys
+import os
 
-# Thêm đường dẫn để import đúng module
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app", "agent"))
+# Ensure backend/app is in path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app"))
+from agent.agent import chat
 
-from agent import chat as agent_chat
+app = FastAPI(title="FlowBot API")
 
-load_dotenv()
-
-app = FastAPI(title="VinBus Route Chatbot API")
-
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Trong thực tế nên giới hạn lại
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
 class ChatRequest(BaseModel):
     query: str
-    user_id: str | None = None
-
+    location: Optional[str] = None
 
 class ChatResponse(BaseModel):
     reply: str
-
-
-@app.get("/")
-async def health():
-    return {"status": "ok"}
-
+    suggested_routes: Optional[list] = []
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
-    reply = agent_chat(request.query)
-    return ChatResponse(reply=reply)
+async def chat_endpoint(request: ChatRequest):
+    print(f"📩 Nhận yêu cầu: '{request.query}' | Vị trí: {request.location}")
+    try:
+        reply = chat(request.query, location=request.location)
+        return ChatResponse(reply=reply, suggested_routes=[])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

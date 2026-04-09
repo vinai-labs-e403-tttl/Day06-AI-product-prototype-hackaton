@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowBot - Trợ Lý VinBus Thông Minh</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #008D4E;
+            --primary-light: #4CAF50;
+            --secondary: #FFD700;
+            --bg-dark: #0F172A;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar - Preset Actions */
+        .sidebar {
+            width: 320px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            items-center: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary-light);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .preset-section h3 {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .preset-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-main);
+            text-align: left;
+            margin-bottom: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .preset-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        /* Main Chat Area */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 1.5rem 2rem;
+            background: var(--glass);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 6px 14px;
+            background: rgba(0, 141, 78, 0.2);
+            border: 1px solid var(--primary);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Message Bubbles */
+        .message {
+            max-width: 80%;
+            padding: 1.2rem;
+            border-radius: 18px;
+            line-height: 1.6;
+            animation: fadeIn 0.4s ease-out;
+            position: relative;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bot-msg {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+
+        .user-msg {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0, 141, 78, 0.3);
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .input-container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--glass);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 12px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .icon-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-gps {
+            background: var(--glass);
+            color: var(--text-muted);
+        }
+
+        .btn-gps.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-send {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Markdown-like formatting helper */
+        .message strong {
+            color: var(--secondary);
+            font-weight: 700;
+        }
+
+        .message br {
+            margin-bottom: 8px;
+        }
+
+        /* Loader */
+        .typing {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <i data-lucide="bus"></i>
+            FLOWBOT
+        </div>
+
+        <div class="preset-section">
+            <h3>Dành cho bạn</h3>
+            <button class="preset-btn" onclick="quickAsk('Tôi muốn sang Grand World chơi. Đi bus nào rẻ nhất?')">
+                <i data-lucide="palmtree"></i> Sang Grand World
+            </button>
+            <button class="preset-btn" onclick="quickAsk('Làm sao để đi từ Royal City sang Ocean Park?')">
+                <i data-lucide="navigation"></i> Đi Royal City - OP
+            </button>
+            <button class="preset-btn" onclick="quickAsk('Hôm nay VinBus OCT1 chạy đến mấy giờ?')">
+                <i data-lucide="clock"></i> Lịch chạy OCT1
+            </button>
+        </div>
+
+        <div class="preset-section" style="margin-top: auto;">
+            <div
+                style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 12px; font-size: 0.85rem; color: var(--text-muted);">
+                <i data-lucide="info" style="width:16px; margin-bottom: 5px;"></i><br>
+                FlowBot sử dụng Hybrid AI để kết hợp dữ liệu Google Maps và VinBus Local Routes.
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="chat-header">
+            <div>
+                <h1 style="font-size: 1.1rem; font-weight: 600;">Hỗ trợ tìm đường VinBus</h1>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Hệ thống AI Bus Assistant v2.0</p>
+            </div>
+            <div class="status-badge">
+                <div style="width: 8px; height: 8px; background: #4CAF50; border-radius: 50%;"></div>
+                HỆ THỐNG TRỰC TUYẾN
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatArea">
+            <div class="message bot-msg">
+                Xin chào! Tôi là <strong>FlowBot</strong>. 🚌<br>
+                Tôi có thể giúp bạn tìm các tuyến <strong>VinBus miễn phí</strong> (OCT/OCP) hoặc các tuyến bus công
+                cộng (E01-E09).<br><br>
+                Bạn muốn đi đâu hôm nay? Đừng quên bật <strong>GPS</strong> để tôi chỉ đường chính xác nhất từ vị trí
+                của bạn nhé!
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-container">
+                <button class="icon-btn btn-gps" id="gpsBtn" onclick="toggleGPS()" title="Bật/Tắt định vị GPS">
+                    <i data-lucide="map-pin"></i>
+                </button>
+                <input type="text" id="userInput"
+                    placeholder="Nhập câu hỏi của bạn tại đây... (VD: Đi từ Royal City sang Grand World)"
+                    onkeypress="handleKey(event)">
+                <button class="icon-btn btn-send" id="sendBtn" onclick="sendMessage()">
+                    <i data-lucide="send"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        let currentCoords = null;
+        const backendUrl = "http://localhost:8000/chat";
+
+        function appendMessage(sender, text) {
+            const chatArea = document.getElementById('chatArea');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${sender === 'user' ? 'user-msg' : 'bot-msg'}`;
+
+            // Simple markdown-ish formatting for line breaks and bold
+            const formattedText = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            msgDiv.innerHTML = formattedText;
+
+            chatArea.appendChild(msgDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function showTyping() {
+            const chatArea = document.getElementById('chatArea');
+            const loader = document.createElement('div');
+            loader.className = 'message bot-msg typing-indicator';
+            loader.id = 'typingIndicator';
+            loader.innerHTML = '<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+            chatArea.appendChild(loader);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function hideTyping() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+
+        async function autoSendLocation(coords) {
+            appendMessage('bot', `📍 <strong>Đã lấy được GPS!</strong><br><small>Tọa độ: ${coords}</small><br>Đang đồng bộ với FlowBot...`);
+            showTyping();
+            try {
+                const response = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: "/loc " + coords,
+                        location: coords
+                    })
+                });
+
+                if (!response.ok) throw new Error("Server trả về lỗi " + response.status);
+
+                const data = await response.json();
+                hideTyping();
+                appendMessage('bot', data.reply);
+            } catch (error) {
+                hideTyping();
+                appendMessage('bot', '<strong>⚠️ Lỗi hệ thống:</strong> Không thể gửi vị trí lên Server. ' + error.message);
+                console.error("Lỗi gửi vị trí:", error);
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const displayMessage = currentCoords ? `📍 ${text}` : text;
+            appendMessage('user', displayMessage);
+            input.value = '';
+
+            showTyping();
+
+            try {
+                const response = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: text,
+                        location: currentCoords
+                    })
+                });
+
+                if (!response.ok) throw new Error("Server error " + response.status);
+
+                const data = await response.json();
+                hideTyping();
+                appendMessage('bot', data.reply);
+            } catch (error) {
+                hideTyping();
+                appendMessage('bot', '<strong>⚠️ Lỗi:</strong> Không thể kết nối tới Backend. Hãy chắc chắn Server đang chạy.');
+                console.error(error);
+            }
+        }
+
+        function handleKey(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        function toggleGPS() {
+            const btn = document.getElementById('gpsBtn');
+            if (currentCoords) {
+                currentCoords = null;
+                btn.classList.remove('active');
+                appendMessage('bot', '📍 Đã <strong>tắt</strong> định vị GPS.');
+            } else {
+                if (navigator.geolocation) {
+                    btn.classList.add('active');
+                    appendMessage('bot', '🛰️ <strong>Đang kết nối vệ tinh...</strong><br><small>Vui lòng cho phép truy cập vị trí trên trình duyệt.</small>');
+
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                            currentCoords = `${pos.coords.latitude}, ${pos.coords.longitude}`;
+                            autoSendLocation(currentCoords);
+                        },
+                        (err) => {
+                            btn.classList.remove('active');
+                            let errorMsg = "Không thể lấy vị trí.";
+                            if (err.code === 1) errorMsg = "Bạn đã từ chối cấp quyền GPS.";
+                            else if (err.code === 3) errorMsg = "Hết thời gian chờ (Timeout) lấy vị trí.";
+
+                            appendMessage('bot', `🚫 <strong>Lỗi GPS:</strong> ${errorMsg}<br><small>Chi tiết: ${err.message}</small>`);
+                        },
+                        { enableHighAccuracy: false, timeout: 8000, maximumAge: 0 }
+                    );
+                } else {
+                    alert("Trình duyệt không hỗ trợ GPS.");
+                }
+            }
+        }
+
+        function quickAsk(text) {
+            document.getElementById('userInput').value = text;
+            sendMessage();
+        }
+    </script>
+</body>
+
+</html>
