@@ -3,8 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
+import sys
 
-from app.agent import Agent
+# Thêm đường dẫn để import đúng module
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "app", "agent"))
+
+from agent import chat as agent_chat
 
 load_dotenv()
 
@@ -18,8 +22,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-agent = Agent()
-
 
 class ChatRequest(BaseModel):
     query: str
@@ -28,8 +30,6 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
-    suggested_routes: list[dict] | None = None
-    confidence: float | None = None
 
 
 @app.get("/health")
@@ -39,5 +39,5 @@ async def health():
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    result = agent.get_route_suggestion(request.query)
-    return ChatResponse(**result)
+    reply = agent_chat(request.query)
+    return ChatResponse(reply=reply)
