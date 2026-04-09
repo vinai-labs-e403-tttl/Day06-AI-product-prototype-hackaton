@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion } from "motion/react";
-import { Send, Mic, Cpu, Radio, ChevronRight, LocateFixed, Loader2 } from "lucide-react";
+import { Send, Mic, Cpu, Radio, ChevronRight, LocateFixed, Loader2, Trash2 } from "lucide-react";
 import { Message, Route } from "../types";
 import { cn } from "../lib/utils";
 
@@ -13,6 +13,9 @@ interface ChatMessage extends Message {
 }
 
 export default function Chat({ onSelectRoute }: ChatProps) {
+  // Tạo conversation_id cố định cho session này
+  const conversationId = useMemo(() => `session_${Date.now()}`, []);
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -28,6 +31,22 @@ export default function Chat({ onSelectRoute }: ChatProps) {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const handleClearConversation = async () => {
+    try {
+      await fetch(`http://localhost:8000/chat/clear?conversation_id=${conversationId}`, {
+        method: "POST",
+      });
+    } catch (_) {}
+    setMessages([
+      {
+        id: Date.now().toString(),
+        text: 'Hội thoại đã được xóa. Bạn muốn đi đâu hôm nay?',
+        sender: 'bot',
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      }
+    ]);
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -47,7 +66,7 @@ export default function Chat({ onSelectRoute }: ChatProps) {
       const response = await fetch("http://localhost:8000/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: input }),
+        body: JSON.stringify({ query: input, conversation_id: conversationId }),
       });
 
       const data = await response.json();
@@ -199,8 +218,15 @@ export default function Chat({ onSelectRoute }: ChatProps) {
       {/* Floating Input Bar */}
       <div className="fixed bottom-24 left-0 w-full px-4 flex justify-center z-40 pointer-events-none">
         <div className="w-full max-w-2xl bg-white/80 backdrop-blur-2xl rounded-2xl p-2 shadow-2xl border border-primary/10 flex items-center gap-2 pointer-events-auto">
-          <button className="w-12 h-12 flex items-center justify-center text-outline hover:text-primary transition-colors">
-            <Mic size={24} />
+          <button
+            onClick={handleClearConversation}
+            title="Xóa hội thoại"
+            className="w-12 h-12 flex items-center justify-center text-outline hover:text-error transition-colors"
+          >
+            <Trash2 size={20} />
+          </button>
+          <button className="w-10 h-10 flex items-center justify-center text-outline hover:text-primary transition-colors">
+            <Mic size={20} />
           </button>
           <input
             className="flex-1 bg-transparent border-none focus:ring-0 text-on-surface-variant font-sans text-base placeholder:text-outline/60 outline-hidden"
