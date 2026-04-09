@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<!-- saved from url=(0048)file:///C:/Users/Acer/Downloads/demo-slides.html -->
+<html lang="vi"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BUSMATE — Demo Slide · Team 31</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#00d68f;--green-dim:#00a36c;--green-dark:#003d29;
+  --navy:#04081a;--navy2:#080e22;--card:#0b1229;--card2:#0d1530;
+  --border:#152040;--border2:#1e3060;
+  --text:#c8d8f0;--muted:#5a7098;--white:#f0f4ff;
+  --red:#ff5e5e;--amber:#ffb347;
+}
+body{background:var(--navy);font-family:'Space Grotesk',sans-serif;color:var(--text)}
+.slide{background:#0a0f1e;color:#e8eaf0;min-height:100vh;padding:32px;display:grid;grid-template-rows:auto auto 1fr;gap:24px}
+.header{border-bottom:1px solid #1e2a4a;padding-bottom:20px;display:flex;justify-content:space-between;align-items:flex-end}
+.product-name{font-size:36px;font-weight:700;letter-spacing:-1px;color:#fff}
+.product-name span{color:#4fd1a5}
+.problem-stmt{font-size:13px;color:#6b7fa3;font-family:'IBM Plex Mono',monospace;max-width:480px;text-align:right;line-height:1.6}
+.track-badge{display:inline-block;background:#0e2235;border:1px solid #1a4060;color:#4fd1a5;font-size:11px;font-family:'IBM Plex Mono',monospace;padding:4px 10px;border-radius:4px;margin-bottom:8px;letter-spacing:1px}
+.grid-5{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto;gap:14px}
+.card{background:#0e1628;border:1px solid #1e2a4a;border-radius:10px;padding:18px}
+.card-label{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#4fd1a5;margin-bottom:10px;font-family:'IBM Plex Mono',monospace}
+.card h3{font-size:15px;font-weight:700;color:#fff;margin-bottom:10px;letter-spacing:-0.3px}
+.card p,.card li{font-size:13px;color:#8a9bbf;line-height:1.6}
+.card ul{list-style:none;padding:0}
+.card li{padding:3px 0;padding-left:12px;position:relative}
+.card li::before{content:"→";position:absolute;left:0;color:#4fd1a5;font-size:11px}
+.card-wide{grid-column:span 2}
+.before-after{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:start}
+.flow-col{background:#060d1a;border-radius:8px;padding:12px}
+.flow-col-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;margin-bottom:8px}
+.before .flow-col-title{color:#e2654a}
+.after .flow-col-title{color:#4fd1a5}
+.flow-step{font-size:12px;color:#8a9bbf;padding:4px 0;border-bottom:1px solid #1a2236;line-height:1.5}
+.flow-step:last-child{border-bottom:none}
+.flow-step strong{color:#c8d4e8;font-weight:500}
+.arrow-mid{display:flex;align-items:center;justify-content:center;padding-top:32px;color:#4fd1a5;font-size:20px}
+.metric-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.metric-box{background:#060d1a;border-radius:8px;padding:12px;text-align:center}
+.metric-val{font-size:22px;font-weight:700;color:#4fd1a5;font-family:'IBM Plex Mono',monospace}
+.metric-label{font-size:11px;color:#6b7fa3;margin-top:2px}
+.failure-item{background:#060d1a;border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.failure-item:last-child{margin-bottom:0}
+.failure-trigger{font-size:12px;color:#e2654a;font-weight:500;margin-bottom:3px}
+.failure-mit{font-size:11px;color:#6b7fa3;font-family:'IBM Plex Mono',monospace}
+.signal-item{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid #1a2236}
+.signal-item:last-child{border-bottom:none}
+.signal-dot{width:6px;height:6px;border-radius:50%;background:#4fd1a5;flex-shrink:0;margin-top:5px}
+.signal-text{font-size:12px;color:#8a9bbf;line-height:1.5}
+.signal-type{font-size:10px;font-family:'IBM Plex Mono',monospace;color:#4fd1a5;font-weight:500;display:block;margin-bottom:2px}
+.demo-box{background:#060d1a;border-radius:8px;padding:14px;font-family:'IBM Plex Mono',monospace}
+.demo-box .user-q{font-size:12px;color:#6b7fa3;margin-bottom:10px}
+.demo-box .user-q span{color:#c8d4e8}
+.demo-reply{font-size:12px;color:#4fd1a5;line-height:1.8}
+.demo-tag{background:#0e2235;border:1px solid #1a4060;color:#4fd1a5;font-size:10px;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:8px}
+.arch-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.arch-node{background:#060d1a;border:1px solid #1e2a4a;border-radius:6px;padding:6px 10px;font-size:11px;color:#8a9bbf;font-family:'IBM Plex Mono',monospace;white-space:nowrap}
+.arch-arrow{color:#2a3a5a;font-size:14px}
+.arch-node.accent{border-color:#1a4060;color:#4fd1a5}
+.footer{font-size:11px;color:#2a3a5a;font-family:'IBM Plex Mono',monospace;text-align:center;padding-top:16px;border-top:1px solid #111a2e}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="header">
+    <div>
+      <div class="track-badge">TRACK: XANHSM · TEAM 31 · E403</div>
+      <div class="product-name">BUS<span>MATE</span></div>
+      <div style="font-size:13px;color:#6b7fa3;margin-top:4px">VinBus Route Chatbot — Hà Nội</div>
+    </div>
+    <div class="problem-stmt">
+      Người dùng VinBus mất thời gian tìm tuyến bus vì giao diện bản đồ phức tạp — BUSMATE trả lời bằng ngôn ngữ tự nhiên, gợi ý tuyến bus phù hợp tại Hà Nội trong vài giây
+    </div>
+  </div>
+  <div class="grid-5">
+    <div class="card card-wide">
+      <div class="card-label">02 · Before | After</div>
+      <div class="before-after">
+        <div class="flow-col before">
+          <div class="flow-col-title">Trước — không có AI</div>
+          <div class="flow-step"><strong>Mở app VinBus</strong></div>
+          <div class="flow-step">Tìm menu bản đồ tuyến</div>
+          <div class="flow-step">Scroll tìm điểm xuất phát</div>
+          <div class="flow-step">Chọn điểm đến thủ công</div>
+          <div class="flow-step">So sánh nhiều tuyến</div>
+          <div class="flow-step"><strong style="color:#e2654a">~5–8 phút · 6+ bước</strong></div>
+        </div>
+        <div class="arrow-mid">→</div>
+        <div class="flow-col after">
+          <div class="flow-col-title">Sau — có BUSMATE</div>
+          <div class="flow-step"><strong>Nhập câu hỏi tự nhiên</strong></div>
+          <div class="flow-step">AI gọi Google Maps Transit API</div>
+          <div class="flow-step">Validate với local VinBus DB</div>
+          <div class="flow-step"><strong style="color:#4fd1a5">Nhận kết quả &lt;3 giây · 1 bước</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">03 · Live Demo</div>
+      <div class="demo-box">
+        <div class="demo-tag">augmentation mode</div>
+        <div class="user-q">Bạn: <span>"Đi từ Hồ Hoàn Kiếm đến Văn Miếu bằng bus?"</span></div>
+        <div class="demo-reply">
+          🚌 Tuyến 23: HHK → Văn Miếu<br>
+          ⏱ 12 phút · 📍 2.1 km<br>
+          🔁 3 trạm dừng
+        </div>
+      </div>
+      <div class="arch-row" style="margin-top:12px">
+        <div class="arch-node accent">GPT-4o-mini</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">LangGraph</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node">Google Maps API</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">04 · Impact</div>
+      <div class="metric-row">
+        <div class="metric-box"><div class="metric-val">8x</div><div class="metric-label">nhanh hơn</div></div>
+        <div class="metric-box"><div class="metric-val">≥85%</div><div class="metric-label">route precision</div></div>
+        <div class="metric-box"><div class="metric-val">&lt;10%</div><div class="metric-label">correction rate</div></div>
+      </div>
+      <ul style="margin-top:12px">
+        <li>Giảm 30% support tickets route query</li>
+        <li>~$267/ngày net ở Realistic scenario</li>
+        <li>Kill khi correction rate &gt;20% / 2 tuần</li>
+      </ul>
+    </div>
+    <div class="card card-wide">
+      <div class="card-label">05 · Failure Modes</div>
+      <div class="failure-item">
+        <div class="failure-trigger">Hallucinate tuyến không tồn tại — user không biết bị sai</div>
+        <div class="failure-mit">→ Validate against route DB trước khi reply. Không tự bịa số tuyến.</div>
+      </div>
+      <div class="failure-item">
+        <div class="failure-trigger">Location name mơ hồ — AI guess sai địa điểm</div>
+        <div class="failure-mit">→ Hỏi clarification thay vì đoán. "Bạn đang ở đâu?"</div>
+      </div>
+      <div class="failure-item">
+        <div class="failure-trigger">Route data cũ — tuyến đã thay đổi nhưng AI vẫn gợi tuyến cũ</div>
+        <div class="failure-mit">→ GTFS auto-refresh. Disclaimer ngày cập nhật dữ liệu.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">05 · Learning Signal</div>
+      <div class="signal-item">
+        <div class="signal-dot"></div>
+        <div class="signal-text"><span class="signal-type">implicit</span>Acceptance rate — % query không bị sửa</div>
+      </div>
+      <div class="signal-item">
+        <div class="signal-dot"></div>
+        <div class="signal-text"><span class="signal-type">explicit</span>Nút "Sai tuyến" → log correction</div>
+      </div>
+      <div class="signal-item">
+        <div class="signal-dot"></div>
+        <div class="signal-text"><span class="signal-type">correction</span>correction_log → weekly analysis → improve prompt + route matching</div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:#4fd1a5;font-family:&#39;IBM Plex Mono&#39;,monospace">Data flywheel: VinBus routes là proprietary → competitive moat</div>
+    </div>
+  </div>
+  <div class="footer">Team 31 · Đăng Thanh Tùng · Trần Kiên Trường · Trịnh Ngọc Tú · Đặng Quang Minh · Trần Tiến Long</div>
+</div>
+
+
+</body></html>
