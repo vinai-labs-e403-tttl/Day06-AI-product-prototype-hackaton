@@ -21,3 +21,15 @@ export interface Stop {
   time: string;
   status: 'past' | 'current' | 'next' | 'future';
 }
+
+export interface ChatMessage extends Message {
+  routes?: Route[];
+}
+
+export interface Conversation {
+  id: string;
+  title: string;
+  createdAt: number;
+  updatedAt: number;
+  messages: ChatMessage[];
+}
