@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from langchain_core.tools import tool
 
 
 class LocalRouteTool:
@@ -133,3 +134,24 @@ class LocalRouteTool:
             "stop_summary": stop_summary,
             "is_reverse": is_reverse,
         }
+
+
+_local_tool_instance = LocalRouteTool()
+
+
+@tool
+def find_local_vinbus_route(origin: str, destination: str) -> dict:
+    """Tìm kiếm các tuyến xe VinBus nội khu (OCT1, OCT2, OCP1, OCP2...) từ database nội bộ.
+    
+    Nên ưu tiên gọi tool này trước khi tìm kiếm bằng Google Maps nếu địa điểm thuộc khu vực Vinhomes 
+    (Ocean Park, Royal City, Times City...).
+
+    Args:
+        origin: Địa điểm xuất phát.
+        destination: Địa điểm đến.
+
+    Returns:
+        Thông chi tiết về tuyến xe VinBus nội khu nếu tìm thấy.
+    """
+    return _local_tool_instance.find_route(origin, destination)
+
