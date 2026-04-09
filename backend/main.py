@@ -32,7 +32,7 @@ class ChatResponse(BaseModel):
     reply: str
 
 
-@app.get("/health")
+@app.get("/")
 async def health():
     return {"status": "ok"}
 
