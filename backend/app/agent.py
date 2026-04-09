@@ -10,7 +10,8 @@ class Agent:
     def __init__(self):
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.model = "gpt-4o-mini"
-        self.route_tool = None  # Lazy load
+        self.route_tool = None        # Lazy load - Google Maps
+        self.local_route_tool = None  # Lazy load - VinBus local DB
 
         self.system_prompt = """Bạn là FlowBot - trợ lý tìm tuyến bus VinBus ở TP.HCM và Hà Nội.
 
@@ -41,6 +42,13 @@ Available tools:
             from app.route_tool import RouteTool
             self.route_tool = RouteTool()
         return self.route_tool
+
+    def _get_local_route_tool(self):
+        """Lazy load local VinBus route tool (OCT1, OCT2, OCP1, OCP2...)."""
+        if self.local_route_tool is None:
+            from app.local_route_tool import LocalRouteTool
+            self.local_route_tool = LocalRouteTool()
+        return self.local_route_tool
 
     def get_route_suggestion(self, query: str) -> dict:
         """Process a route query using an agent loop with tool calling."""
@@ -120,14 +128,49 @@ Available tools:
         }
 
     def _call_route_tool(self, origin: str, destination: str) -> dict:
-        """Call the route tool and format the result."""
+        """
+        Tìm tuyến theo thứ tự ưu tiên:
+        1. Local VinBus DB (OCT1, OCT2, OCP1, OCP2...)
+        2. Google Maps Transit API (fallback)
+        """
+        # --- Bước 1: Tìm trong local VinBus database ---
+        try:
+            local_tool = self._get_local_route_tool()
+            local_result = local_tool.find_route(origin, destination)
+            if local_result["found"]:
+                # Chuyển format sang dạng chung
+                routes = []
+                for r in local_result["routes"]:
+                    routes.append({
+                        "route_id": r["id"],
+                        "route_name": r["full_name"],
+                        "operator": r["operator"],
+                        "frequency": f"{r['frequency_minutes']} phút/chuyến",
+                        "is_free": r["is_free"],
+                        "stop_summary": r["stop_summary"],
+                        "description": r["description"],
+                        "source": "local_db",
+                    })
+                return {
+                    "success": True,
+                    "source": "local_vinbus_db",
+                    "routes": routes,
+                    "message": None,
+                }
+        except Exception as e:
+            pass  # Nếu local tool lỗi, tiếp tục dùng Google Maps
+
+        # --- Bước 2: Fallback sang Google Maps Transit API ---
         try:
             tool = self._get_route_tool()
             route_result = tool.find_bus_route(origin, destination)
+            if route_result.get("success") and route_result.get("routes"):
+                route_result["source"] = "google_maps"
             return route_result
         except Exception as e:
             return {
                 "success": False,
+                "source": None,
                 "routes": [],
                 "message": f"Lỗi khi tìm tuyến: {str(e)}"
             }
