@@ -12,7 +12,7 @@ import sys
 # Đảm bảo thư mục app/tools có thể được import
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from tools.route_tool import find_bus_route
+from tools.transit_route_tool import find_transit_route
 
 load_dotenv()
 
@@ -26,7 +26,7 @@ class AgentState(TypedDict):
     messages: Annotated[list, add_messages]
 
 # 3. Khởi tạo LLM và Tools
-tools_list = [find_bus_route]
+tools_list = [find_transit_route]
 llm = ChatOpenAI(model="gpt-4o-mini")
 llm_with_tools = llm.bind_tools(tools_list)
 
